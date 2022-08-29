@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<hr>
+<section class="container-fluid" style="background-color:rgb(255, 255, 255);">
+    <div class="alert alert-light" role="alert">
+        <div class="container">
+            <div class="row justify-content-md-center">
+                <table class="table table-borderless table-responsive">
+                    <thead>
+                    <tr class="border-bottom text-center">
+                        <th scope="col">İsim</th>
+                        <th scope="col">Gösterim</th>
+                        <th scope="col">Uzunluk</th>
+                        <th scope="col">Açıklama</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for hist in hists %}
+                    <tr class="border-bottom text-center">
+                        <td>{{hist.name}}</td>
+                        {% set file_name = hist.name +'.wav' %}
+                        <td>
+                            <audio controls>
+                                <source src="{{ url_for( 'static' , filename= file_name ) }}" type="audio/wav">
+                            </audio>
+                        </td>
+                        {% set second = hist.length%60 %}
+                        {% set minute = (hist.length-second)/60 %}
+                        <td>{{minute}} dk {{second}} sn</td>
+                        <td>{{hist.info}}</td>
+                    </tr>
+                    {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

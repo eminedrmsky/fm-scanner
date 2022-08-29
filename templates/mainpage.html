@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div id="mySidenav" class="sidenav">
+    <form method="POST" id="sidenav-form">
+        <div class="btn-group-vertical" role="group">
+            {% for item in items %}
+            <input type="radio" class="btn-check" name="kanalFrekansı" autocomplete="off" id="{{ item.freq }}"
+                   value="{{ item.freq }}" onclick="this.form.submit()">
+            <label class="btn btn-outline-dark" for="{{ item.freq }}">
+                {{ item.freq/100 }} - {{ item.kanal }}
+            </label>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<!-- Page content -->
+<div class="main">
+
+    <div class="align-items-center d-flex flex-column">
+        <div class="card text-center m-3">
+            <div class="card-body">
+                <h3>{{ items[CurrentChannel].kanal }}</h3>
+                <h4>{{ items[CurrentChannel].freq/100 }} Hz</h4>
+                <hr>
+                <form method="POST" id="main-form">
+                    <div class="btn-group-vertical align-items-center">
+                        <div class="d-inline mb-2">
+                            <audio autoplay id="audioplayer">
+                                <source src="{{ url_for('audio') }}" type="audio/x-wav;codec=pcm">
+                            </audio>
+                            <button class="fa fa-backward btn btn-outline-dark" type="submit" value="prev" id="prev"
+                                    name="prev"></button>
+                            <button class="fa fa-play btn btn-outline-dark" type="button" id="playbtn"
+                                    onclick="playOnClick()"></button>
+                            <button class="fa fa-pause btn btn-outline-dark" type="button" id="pausebtn"
+                                    onclick="pauseOnClick()"></button>
+                            <button class="fa fa-forward btn btn-outline-dark" type="submit" value="next" id="next"
+                                    name="next"></button>
+                        </div>
+                        <div class="d-flex d-inline mb-2">
+                            <div class="fa fa-volume-up mx-1 mt-1"></div>
+                            <input type="range" class="form-range" id="volume-range" oninput="volumeOnInput()" value="100">
+                        </div>
+                        <button class="btn btn-outline-dark" type="submit" id="hepsinidinle" name="hepsinidinle"
+                                value="hepsinidinle" onclick="showLoader()">Hepsini sırayla dinle
+                        </button>
+                    </div>
+                    <div class="mt-1" id="hepsinidinle-info">
+                        <h6>Bütün kanallar sırayla oynatılıyor...</h6>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex flex-row w-75 mx-auto">
+        <div class="col">
+            <div class="d-flex flex-row border border-dark rounded p-0 m-2 justify-content-center">
+                <div class="d-inline-block pt-2 h5">Sıcaklık: {{mediums[0].temp}} °C</div>
+                {% if mediums[0].temp > 60 %}
+                <div class="d-inline-block ms-3" id="temp-status-high">(UYARI! Sıcaklık çok yüksek!)</div>
+                {% else %}
+                <div class="d-inline-block ms-3 pt-2" id="temp-status-normal">(Normal seviyede)</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
+                Nem: {{mediums[0].hum}} %
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="d-flex flex-row w-75 mx-auto">
+        <div class="col">
+            <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
+                RSSI: {{items[CurrentChannel].rssi}}
+            </div>
+            <div class="progress m-2" style="height: 30px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     style="width: {{items[CurrentChannel].rssi * 2}}%;" aria-valuenow="{{items[CurrentChannel].rssi}}"
+                     aria-valuemin="0" aria-valuemax="50"></div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
+                SNR: {{items[CurrentChannel].snr}}
+            </div>
+            <div class="progress m-2" style="height: 30px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     style="width: {{items[CurrentChannel].snr * 4}}%;"
+                     aria-valuenow="{{items[CurrentChannel].snr}}" aria-valuemin="0" aria-valuemax="25"></div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="d-flex flex-row w-50 mx-auto">
+        <div class="col">
+            <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
+                Resp1: {{items[CurrentChannel].resp1}}
+            </div>
+            <div class="progress m-2" style="height: 30px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     style="width: {{items[CurrentChannel].resp1 * 20}}%;"
+                     aria-valuenow="{{items[CurrentChannel].resp1}}"
+                     aria-valuemin="0"
+                     aria-valuemax="5"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col">
+        <hr>
+        <p class="fa fa-info-circle d-flex flex-row p-2 m-2 justify-content-center" style='color: grey;'>
+            Değerler {{hists[-1].name}} tarihinde güncellenmiştir.
+        </p>
+    </div>
+</div>
+
+
+<!-- Bekleme sırasında blurlama ve loop için gerekli css ve js -->
+
+<style>
+
+          #semiTransparenDiv {
+            width:100%;
+            font-weight: bold;
+            padding: 400px 0;
+            text-align: center;
+          
+          /*-Lets Center the Spinner-*/
+            position:fixed;
+            left:0;
+            right:0;
+            top:0;
+            bottom:0;
+
+            /*Centering my shade */
+            
+            background-color: rgba(255,255,255,0.7);
+            z-index:9999;
+            display: none; 
+          }
+          
+          @-webkit-keyframes spin {
+          from {-webkit-transform:rotate(0deg);}
+          to {-webkit-transform:rotate(360deg);}
+          }
+          
+          @keyframes spin {
+          from {transform:rotate(0deg);}
+          to {transform:rotate(360deg);}
+          }
+          
+          #semiTransparenDiv::after {
+            content:'';
+            display:block;
+            position:absolute;
+            left:48%;top:40%;
+            width:80px;height:80px;
+            border-style:solid;
+            border: 5px solid black;
+            border-top-color: #6CC4EE;
+            border-width: 7px;
+            border-radius:50%;
+            -webkit-animation: spin .8s linear infinite;
+            
+            /* Lets make it go round */
+            animation: spin .8s linear infinite;
+          }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</style>
+
+<div id="semiTransparenDiv">
+    <a style='color:rgb(41, 32, 32);'>Please Wait...</a>
+</div>
+
+<script>
+    function volumeOnInput(){
+        var audioplayer = document.getElementById("audioplayer");
+        var volumeRange = document.getElementById("volume-range");
+        audioplayer.volume = volumeRange.value / 100;
+    }
+
+    function showLoader() {
+        document.getElementById("hepsinidinle-info").style.display = "block";
+        document.getElementById("playbtn").disabled = true;
+        document.getElementById("pausebtn").disabled = true;
+    }
+
+    function playOnClick() {
+        document.getElementById('audioplayer').play();
+        document.getElementById('pausebtn').style.display = 'inline-block';
+        document.getElementById('playbtn').style.display = 'none';
+    }
+
+    function pauseOnClick() {
+        document.getElementById('audioplayer').pause();
+        document.getElementById('playbtn').style.display = 'inline-block';
+        document.getElementById('pausebtn').style.display = 'none';
+    }
+
+    $(document).ready(function() {
+        document.getElementById("{{items[CurrentChannel].freq}}").checked = true;
+        var audioplayer = document.getElementById("audioplayer");
+        var promise = audioplayer.play();
+        if (promise !== undefined) {
+            promise.then(_ => {
+
+            }).catch(error => {
+                pauseOnClick();
+            });
+        }
+    });
+
+    function waitUntilLoad() {
+        console.log("deneme");
+        const elements = document.getElementsByClassName("btn");
+        for(let i = 0; i < elements.length; i++){
+            elements[i].disabled = true;
+        }
+        const checkElements = document.getElementsByClassName("btn-check");
+        for(let i = 0; i < checkElements.length; i++){
+            checkElements[i].disabled = true;
+        }
+    }
+    $('form').submit(function () {
+
+
+            var form1 = $('#sidenav-form');
+            console.log(form1);
+            form1.find('input[type="submit"], button[type="submit"], input[type="radio"]').each(function (index) {
+                // Create a disabled clone of the submit button
+                $(this).clone(false).removeAttr('id').prop('disabled', true).insertBefore($(this));
+
+                // Hide the actual submit button and move it to the beginning of the form
+                $(this).hide();
+                form1.prepend($(this));
+            });
+            var form2 = $('#main-form');
+            console.log(form2);
+            form2.find('input[type="submit"], button[type="submit"], input[type="radio"]').each(function (index) {
+                // Create a disabled clone of the submit button
+                $(this).clone(false).removeAttr('id').prop('disabled', true).insertBefore($(this));
+
+                // Hide the actual submit button and move it to the beginning of the form
+                $(this).hide();
+                form2.prepend($(this));
+            });
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+<!-- sidenavigasyon barı için gerekli css ve js -->
+<style>
+  .sidenav {
+    height: 100%;
+    width: 260px;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    background-color: rgb(228, 228, 228);
+    overflow-x: hidden;
+    padding: 20px;
+  }
+
+  #playbtn {
+    display: none;
+  }
+
+  .sidenav button {
+    margin-bottom: 10px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #000000;
+    display: block;
+  }
+
+  .sidenav label {
+    margin-bottom: 10px;
+    text-decoration: none;
+    font-size: 18px;
+  }
+
+  #hepsinidinle-info {
+    display: none;
+  }
+
+  #temp-status-normal {
+    color: green;
+  }
+
+  #temp-status-high {
+    color: red;
+  }
+  
+  .main {
+    margin-left: 290px; /* Same as the width of the sidenav */
+    margin-right: 30px;
+  }
+  
+  @media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</style>
+
+
+{% endblock %}
