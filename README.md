@@ -21,3 +21,10 @@
  pip install -r requirements.txt
  
 ```
+
+### adding directory to $PATH
+```
+echo $PATH
+export PATH="/home/pi/.local/bin:$PATH"
+
+```
