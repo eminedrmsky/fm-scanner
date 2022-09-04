@@ -3,6 +3,7 @@
  
  ### install python
  ```
+ python3.6.8
  sudo apt-get install -y python3 git python3-pip
  sudo apt-get install python3-dev or  sudo apt-get install python3.9-dev  (version you have)
  ```
@@ -28,3 +29,4 @@ echo $PATH
 export PATH="/home/pi/.local/bin:$PATH"
 
 ```
+
