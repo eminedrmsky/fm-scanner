@@ -1,8 +1,7 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response
 from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from flask import Flask, Response,render_template
 from abe import main
 from time import *
 import numpy as np
@@ -79,10 +78,15 @@ global CurrentChannel
 CurrentChannel = 0
 Frequency_Scan = main.SerialCommunication()
 
+# SocketFlag = False ###https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
+
 
 @app.route('/audio', methods =['GET', 'POST'])
 def audio():
-    try:   
+
+     ##   if SocketFlag= is_socket_closed() #bağlı cihaz yoksa true cönüp alttaki fonksiyonu çalıştırcak. else meşgul uyarısı versin.
+    try:
+        # socketflag = true ##bu gereksiz olabilir bi dnemek lazım. 
         sleep(0.5)
         s =socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((socket.gethostname(),1235))
@@ -117,6 +121,8 @@ def MainPage():
 
     if False:  # Buraya error şartı gelecek, true ise error sayfasına gidecek
         return render_template("errorpage.html")
+
+    # flag kontrol yap, socketflagı renderın içine at
 
     global CurrentChannel
     items = status.query.all()
@@ -155,7 +161,7 @@ def MainPage():
                     else:
                         pass
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
-    return render_template('mainpage.html', items = items, CurrentChannel = CurrentChannel, mediums = mediums, text = text, hists = hists)
+    return render_template('mainpage.html', items = items, CurrentChannel = CurrentChannel, mediums = mediums, text = text, hists = hists) #socketflagi buraya ekle
 
 @app.route('/records')
 def showRecords():
