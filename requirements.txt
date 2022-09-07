@@ -13,5 +13,8 @@ thread6==0.2.0 +
 virtualenv==20.7.2  +
 pyserial==3.5
 marshmallow-sqlalchemy==0.26.1
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> ca6118053907a25f13cf6875413c8c15437e0052
