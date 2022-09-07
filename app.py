@@ -72,7 +72,7 @@ record_schema = RecordsSchema()
 
 ####################################################################################################################################
 
-path = "/home/pi/Freq_Scan/fm-scanner/SoundFiles/"
+path = "/home/pi/fm-scanner/fm-scanner/SoundFiles/"
 
 global CurrentChannel
 CurrentChannel = 0

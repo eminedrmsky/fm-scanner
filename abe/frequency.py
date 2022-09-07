@@ -66,8 +66,8 @@ class BaseFrequencyProccess(object):
                     freq = answer[10] * 256 + answer[11]
                     rssi = answer[12]
                     snr = answer[13]
-                    valid = 1
-                    return resp1, freq, rssi, snr, valid
+                    
+                    return resp1, freq, rssi, snr, 
                 else:
                     pass
                     #logger.error("answer gelmiyor")
@@ -78,6 +78,6 @@ class BaseFrequencyProccess(object):
             #flag
             
               
-        return 0, 0, 0, 0, 0
+        return 0, 0, 0, 0
 
     

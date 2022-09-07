@@ -2,7 +2,7 @@ from abe.frequency import BaseFrequencyProccess
 from abe.support import *
 import sqlite3 
 
-con = sqlite3.connect("/home/pi/Freq_Scan/fm-scanner/abe/get_status.db") 
+con = sqlite3.connect("/home/pi/fm-scanner/fm-scanner/abe/get_status.db") 
 cursor = con.cursor()
 
 dbProccess = DatabaseProcess(con, cursor)

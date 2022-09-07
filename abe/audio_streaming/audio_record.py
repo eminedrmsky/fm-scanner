@@ -15,7 +15,7 @@ try:
     s.connect((socket.gethostname(),1234))
 
     # Database connection
-    con = sqlite3.connect("/home/pi/Freq_Scan/fm-scanner/abe/get_status.db") 
+    con = sqlite3.connect("/home/pi/fm-scanner/fm-scanner/abe/get_status.db") 
     cursor = con.cursor()
 
     audio = pyaudio.PyAudio() # create pyaudio instantiation
@@ -125,8 +125,8 @@ DAY = 1
 HOUR = 1
 
 #adjusting time
-path='/home/pi/Freq_Scan/fm-scanner/static/'
-logpath='/home/pi/Freq_Scan/fm-scanner/logs/'
+path='/home/pi/fm-scanner/fm-scanner/static/'
+logpath='/home/pi/fm-scanner/fm-scanner/logs/'
 
 #classes
 dbProcess = databaseBusiness(con,cursor)

@@ -58,7 +58,7 @@ message_id = 0
 header = b'ABE'
 
 #Frekans listesinin hepsini alan kısım
-con = sqlite3.connect("/home/pi/Freq_Scan/fm-scanner/abe/get_status.db") 
+con = sqlite3.connect("/home/pi/fm-scanner/fm-scanner/abe/get_status.db") 
 cursor = con.cursor()
 
 cursor.execute("SELECT freq FROM status")
@@ -348,22 +348,22 @@ class DatabaseProcess():
             frequencylist.append(frequency[0])
         return numpy.array(frequencylist)
 
-    def get_data_dinle(self): #databaseden dinleme komutu almak için
+    def get_data_serial(self): #databaseden dinleme komutu almak için
         crsr = self.cursor
         crsr.execute("SELECT stat FROM dinleme WHERE var = 'listen'") 
         data = crsr.fetchall()
         return data[0][0]
     
-    def update_listen_Low(self):
+    def serial_available(self):
         conn = self.con
         crsr = self.cursor
         crsr.execute("UPDATE dinleme SET stat = 0 where var = 'listen'")
         conn.commit()
     
-    def update_listen_High(self):
+    def serial_bussy(self):
         conn = self.con
         crsr = self.cursor
-        crsr.execute("UPDATE dinleme SET stat = 0 where var = 'listen'")
+        crsr.execute("UPDATE dinleme SET stat = 1 where var = 'listen'")
         conn.commit()
 
     def update_temp(self, date, temp, hum):
@@ -371,8 +371,6 @@ class DatabaseProcess():
         crsr = self.cursor
         crsr.execute("UPDATE medium SET date = ?, temp = ?, hum = ?", (date, temp, hum))
         conn.commit()
-
-####################################################################################################################################
 
 
 
