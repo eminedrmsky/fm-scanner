@@ -83,5 +83,13 @@ sudo apt-get install linux-headers-$(uname -r)
 
 ```
 
+### Numpy libf77blas.so.3: cannot open shared file
+
+```
+sudo apt-get install libatlas-base-dev
+```
+
+
+
 
 
