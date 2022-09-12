@@ -89,6 +89,44 @@ sudo apt-get install linux-headers-$(uname -r)
 sudo apt-get install libatlas-base-dev
 ```
 
+#SYSTEMD starting scripts at reboot
+
+create and edit new unit file
+```
+sudo nano /etc/systemd/system/example.service
+
+```
+Inside the unit file
+```
+[Unit]
+Description=Example Service
+Wants=network-online.target
+After=network-online.target   //after device connected to a network start service
+
+[Service]
+Type=idle
+Restart=on-failure
+User=pi
+ExecStart=/bin/bash -c 'cd /home/pi/examplePath && source env/bin/activate && python3 example.py'
+
+[Install]
+WantedBy=multi-user.target
+```
+Give permission to the file
+
+```
+sudo chmod 644 /etc/systemd/system/example.service
+```
+Update the daemon and enable service
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable example.service
+```
+#Useful commands of SYSTEMD
+
+sudo systemctl disable example.service
+systemctl status example.service
 
 
 
