@@ -124,10 +124,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable example.service
 ```
 # Useful commands of SYSTEMD
-
+```
 sudo systemctl disable example.service
 systemctl status example.service
-
+```
 
 
 
