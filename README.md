@@ -89,7 +89,7 @@ sudo apt-get install linux-headers-$(uname -r)
 sudo apt-get install libatlas-base-dev
 ```
 
-#SYSTEMD starting scripts at reboot
+# SYSTEMD starting scripts at reboot
 
 create and edit new unit file
 ```
@@ -123,7 +123,7 @@ Update the daemon and enable service
 sudo systemctl daemon-reload
 sudo systemctl enable example.service
 ```
-#Useful commands of SYSTEMD
+# Useful commands of SYSTEMD
 
 sudo systemctl disable example.service
 systemctl status example.service
