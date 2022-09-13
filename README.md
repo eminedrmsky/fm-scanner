@@ -100,7 +100,7 @@ Inside the unit file
 ```
 [Unit]
 Description=Example Service
-Wants=network-online.target
+Wants=network-online.target     //PartOf can be used too
 After=network-online.target   //after device connected to a network start service
 
 [Service]
