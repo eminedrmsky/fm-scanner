@@ -117,9 +117,10 @@
         <p class="fa fa-info-circle d-flex flex-row p-2 m-2 justify-content-center" style='color: grey;'>
             Değerler {{hists[-1].name}} tarihinde güncellenmiştir.
         </p>
+        
+        <span id="date"></span>
     </div>
 </div>
-
 
 <!-- Bekleme sırasında blurlama ve loop için gerekli css ve js -->
 
@@ -171,28 +172,6 @@
             /* Lets make it go round */
             animation: spin .8s linear infinite;
           }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -276,17 +255,22 @@
             });
     });
 
+    function getCurrentTime(){
 
+        n =  new Date();
+        y = n.getFullYear();
+        m = n.getMonth() + 1;
+        d = n.getDate();
+        h = n.getHours();
+        min = n.getMinutes();
+        s = n.getSeconds();
+        document.getElementById("date").innerHTML = m + "/" + d + "/" + y + " " +  h + ":" + min + ":" + s;
+    };
 
-
-
-
-
-
-
-
-
-
+    function displayCurrentTime(){
+        var refresh=1000;
+        mytime=setTimeout('getCurrentTime()',refresh)
+    }
 
 </script>
 

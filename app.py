@@ -7,6 +7,7 @@ from time import *
 import numpy as np
 import socket
 
+
 app = Flask(__name__, static_folder='static')
 api = Api(app)
 

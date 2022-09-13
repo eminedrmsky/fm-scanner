@@ -7,14 +7,11 @@ Flask-SQLAlchemy==2.5.1  +
 numpy==1.16.2  +
 PyAudio==0.2.11  + 
 pytz==2021.3  +
-RPi.GPIO==0.7.0  +
+RPi.GPIO==0.7.0  +pip
 schedule==1.1.0  +
 thread6==0.2.0 +
 virtualenv==20.7.2  +
 pyserial==3.5
 marshmallow-sqlalchemy==0.26.1
-<<<<<<< HEAD
 
 
-=======
->>>>>>> ca6118053907a25f13cf6875413c8c15437e0052
