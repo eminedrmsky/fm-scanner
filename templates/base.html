@@ -53,7 +53,7 @@
     <!-- Custom styles for this template -->
     <link href="../static/bootstrap/features.css" rel="stylesheet">
 </head>
-<body onload=displayCurrentTime();>
+<body>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -94,7 +94,31 @@
 
     {% endblock %}
 
+    <span class="d-none d-lg-block">
+        <ul class="nav justify-content-center fixed-bottom bg-white" style="opacity: 0.7;">
+            <h6 class="user-select-none">&copy; ABE Teknoloji 2022 - </h6>
+            <h6 id="date"></h6>
+        </ul>
+    </span>
+
 </main>
 
 </body>
 </html>
+
+<script>
+    function getCurrentTime(){
+
+        n =  new Date();
+        y = n.getFullYear();
+        m = n.getMonth() + 1;
+        d = n.getDate();
+        h = n.getHours();
+        min = n.getMinutes();
+        s = n.getSeconds();
+        document.getElementById("date").innerHTML = d + "/" + m + "/" + y + " " +  h + ":" + min + ":" + s;
+        };
+
+    setInterval(getCurrentTime,1000);
+
+</script>

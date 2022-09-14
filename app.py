@@ -2,11 +2,11 @@ from flask import Flask, render_template, jsonify, request, Response
 from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+import urllib.request, json
 from abe import main
 from time import *
 import numpy as np
 import socket
-
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -17,6 +17,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///abe/get_status.db'
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
+urlbase="http://192.168.1.28:8000"
 
 #SQLAlchemy modelleri
 class status(db.Model):
@@ -78,6 +80,33 @@ path = "/home/pi/fm-scanner/fm-scanner/SoundFiles/"
 global CurrentChannel
 CurrentChannel = 0
 Frequency_Scan = main.SerialCommunication()
+
+def getFrequencies():
+    url= urlbase + "/parameters"
+    response = urllib.request.urlopen(url)
+    data =response.read()
+    dict =json.loads(data)
+    return dict
+
+try:
+    frequencyData = getFrequencies()
+    print(frequencyData)
+    db.session.query(status).delete()
+    db.session.commit()
+
+    for frequency in frequencyData:
+        freq = frequency['freq']
+        Kanal = frequency['Kanal']
+        resp1 = 0
+        rssi = 0
+        snr = 0
+        stat = " "
+        new_frequency = status(freq, Kanal, resp1, rssi, snr, stat)
+        db.session.add(new_frequency)
+        db.session.commit()
+
+except Exception as e:
+    print(e)
 
 # SocketFlag = False ###https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
 
@@ -205,8 +234,6 @@ class Frequency(Resource):
         snr = request.json['snr']
         stat = request.json['stat']
 
-
-
         parameters.freq = freq
         parameters.Kanal = Kanal
         parameters.resp1 = resp1
@@ -308,7 +335,7 @@ api.add_resource(Records, "/records")
 api.add_resource(delete_record, "/records/<string:record>")
 
 if __name__ == '__main__':
-    app.run( host='0.0.0.0', debug= True, threaded=True, port=5000)
+    app.run( host='0.0.0.0', debug= True, threaded=True, port=3000)
 
 
     

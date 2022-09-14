@@ -118,7 +118,6 @@
             Değerler {{hists[-1].name}} tarihinde güncellenmiştir.
         </p>
         
-        <span id="date"></span>
     </div>
 </div>
 
@@ -255,22 +254,6 @@
             });
     });
 
-    function getCurrentTime(){
-
-        n =  new Date();
-        y = n.getFullYear();
-        m = n.getMonth() + 1;
-        d = n.getDate();
-        h = n.getHours();
-        min = n.getMinutes();
-        s = n.getSeconds();
-        document.getElementById("date").innerHTML = m + "/" + d + "/" + y + " " +  h + ":" + min + ":" + s;
-    };
-
-    function displayCurrentTime(){
-        var refresh=1000;
-        mytime=setTimeout('getCurrentTime()',refresh)
-    }
 
 </script>
 
@@ -327,39 +310,6 @@
     .sidenav {padding-top: 15px;}
     .sidenav a {font-size: 18px;}
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 </style>
