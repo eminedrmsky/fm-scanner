@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request, Response
 from flask_restful import Api, Resource, reqparse
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
-import urllib.request, json
+import urllib.request, urllib.parse, json
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -20,15 +20,15 @@ urlbase="http://192.168.1.28:3000"
 #table which  records frequencies and channel names###############################
 class frequencies(db.Model):
     freq    = db.Column(db.Integer, unique = True, primary_key=True)
-    Kanal   = db.Column(db.Text)
+    kanal   = db.Column(db.Text)
 
-    def __init__(self, freq, Kanal):
+    def __init__(self, freq, kanal):
         self.freq = freq
-        self.Kanal = Kanal
+        self.kanal = kanal
 
 class frequencySchema(ma.Schema):
     class Meta:
-        fields = ('freq', 'Kanal')
+        fields = ('freq', 'kanal')
 
 frequency_schema = frequencySchema()
 frequencies_schema = frequencySchema(many = True)
@@ -37,195 +37,88 @@ frequencies_schema = frequencySchema(many = True)
 #Table with channel datas ###########################################################
 class frequencyData(db.Model):
     freq    = db.Column(db.Integer, unique = True, primary_key=True)
-    resp1   = db.Column(db.Integer)
-    rssi   = db.Column(db.Integer)
-    snr   = db.Column(db.Integer)
+    resp1 	= db.Column(db.Integer)
+    rssi 	= db.Column(db.Integer)
+    snr 	= db.Column(db.Integer)
+    stat 	= db.Column(db.Text)
+    kanal   = db.Column(db.Text)
 
-    def __init__(self, freq, resp1, rssi, snr):
+    def __init__(self, freq, kanal, resp1, rssi, snr, stat):
         self.freq = freq
+        self.kanal = kanal
         self.resp1 = resp1
         self.rssi = rssi
         self.snr = snr
+        self.stat = stat
 
-class parameterSchema(ma.Schema):
+class dataSchema(ma.Schema):
     class Meta:
-        fields = ('freq', 'resp1', 'rssi', 'snr')
+        fields = ('freq', 'kanal', 'resp1', 'rssi', 'snr', 'stat')
 
-parameter_schema = parameterSchema()
-parameter_schema = parameterSchema(many = True)
+data_schema = dataSchema()
+data_schema = dataSchema(many = True)
 
-
-#TODO sonra yapılcak medium  ve records
-
-
-# class medium(db.Model):
-#     date = db.Column(db.String(20), primary_key = True)
-#     temp = db.Column(db.Integer)
-#     hum = db.Column(db.Integer)
-
-    
-#     def __init__(self, date, temp, hum):
-#         self.date = date
-#         self.temp = temp
-#         self.hum = hum
-
-# class MediumSchema(ma.Schema):
-#     class Meta:
-#         fields = ('date', 'temp', 'hum')
-
-# medium_schema = MediumSchema(many = True)
-
-# class records(db.Model):
-#     name      = db.Column(db.Text, primary_key = True)
-#     length    = db.Column(db.Integer)
-#     info 	= db.Column(db.Text)
-
-# class RecordsSchema(ma.Schema):
-#     class Meta:
-#         fields = ('name', 'length', 'info')
-
-# records_schema = RecordsSchema(many = True)
-# record_schema = RecordsSchema()
 
 #####################################################################################################################################################
+def getData():
+    url = urlbase + "/parameters"
+    response = urllib.request.urlopen(url)
+    data = response.read()
+    dict = json.loads(data)
+    return dict
 
+try:
+    parameterData = getData()
 
-#class for manipulating only one channel entry and its parameters#######################
-class Frequency(Resource):
-#gets data of chosen frequency
-    def get(self, frequency):
-        parameters = status.query.get(frequency)
-        return parameter_schema.jsonify(parameters)
-
-#adds new frequency to database 
-    def post(self,frequency):    
-
-        freq = request.json['freq']
-        Kanal = request.json['Kanal']
-        resp1 = request.json['resp1']
-        rssi = request.json['rssi']
-        snr = request.json['snr']
-        stat = request.json['stat']
-
-        new_frequency = status(freq, Kanal, resp1, rssi, snr, stat)
-
+    for parameter in parameterData:
+        freq = parameter['freq']
+        kanal = parameter['kanal']
+        resp1 = parameter['resp1']
+        rssi = parameter['rssi']
+        snr = parameter['snr']
+        stat = parameter['stat']
+        new_frequency = frequencyData(freq, kanal, resp1, rssi, snr, stat)
         db.session.add(new_frequency)
         db.session.commit()
 
-        return parameter_schema.jsonify(new_frequency)
-#updates all data of chosen frequency
-    def put(self, frequency):
-        parameters = status.query.get(frequency)
+except Exception as e:
+    print(e)
 
-        freq = request.json['freq']
-        Kanal = request.json['Kanal']
-        resp1 = request.json['resp1']
-        rssi = request.json['rssi']
-        snr = request.json['snr']
-        stat = request.json['stat']
 
-        parameters.freq = freq
-        parameters.Kanal = Kanal
-        parameters.resp1 = resp1
-        parameters.rssi = rssi
-        parameters.snr = snr
-        parameters.stat = stat
-
-        db.session.commit()
-
-        return parameter_schema.jsonify(parameters)
-
-#deletes chosen frequency from database
-    def delete(self, frequency):
-        parameters = status.query.get(frequency)
-        db.session.delete(parameters)
-        db.session.commit()
-        return parameter_schema.jsonify(parameters)
+######################################################################################################################################################
 
 # class for manipulating all channel datas and their parameters###################################
 class allFrequencies(Resource):
     def get(self):
-        #all_Frequencies = status.query.all()
         all_Frequencies = frequencies.query.all()
         result = frequencies_schema.dump(all_Frequencies)
         return jsonify(result)
     
     def post(self):
+        
+        # for item in request
+        # freq = request.json['freq']
+        # kanal = request.json['kanal']
+        # resp1 = 0
+        # rssi = 0
+        # snr = 0
+        # stat = " "
+
+        # new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
+
+        # db.session.add(new_frequency)
+        # db.session.commit()
+
+        # return parameter_schema.jsonify(new_frequency)
         return {}
 
-    def put(self):
-        return{}
-    
-    def delete(self):
-        return {}
-
-#class for manipulating temperature and humidity data that taken from device regularly##############
-class temperatureAndHumidity(Resource):
-    def get(self):
-        parameters = medium.query.all()
-        result = medium_schema.dump(parameters)
-        return jsonify(result)
-    
-    def post(self):
-        date = request.json['date']
-        temp = request.json['temp']
-        hum = request.json['hum']
-
-        new_medium = status(date,temp,hum)
-
-        db.session.add(new_medium)
-        db.session.commit()
-
-        return medium_schema.jsonify(new_medium)
-
-
-    def put(self):
-        return{}
-
-    def delete(self):
-        return {}
-
-class isThereSound(Resource):
-    def get(self):
-        return{}
-
-class isThereConnection(Resource):
-    def get(self):
-        return{}
-
-class searchChannel(Resource):
-    def get(self):
-        return{}
-
-#class for manipulating only one channel entry and its parameters#######################
-class Records(Resource):
-#gets data of all records
-    def get(self):
-        all_records = records.query.all()
-        result = records_schema.dump(all_records)
-        return jsonify(result)
-
-#deletes chosen record from database
-class delete_record(Resource):
-    def delete(self, record):
-        Record_info = records.query.get(record)
-        db.session.delete(Record_info)
-        db.session.commit()
-        return record_schema.jsonify(Record_info)
 
 ##########################Resources and routes ###############################################################################################################################
 
 
-api.add_resource(Frequency, "/frequency/<int:frequency>")
-api.add_resource(allFrequencies, "/parameters")
-api.add_resource(temperatureAndHumidity, "/tempAndHum")
-api.add_resource(isThereSound, "/sound")
-api.add_resource(isThereConnection, "/connection")
-api.add_resource(searchChannel, "/search")
-api.add_resource(Records, "/records")
-api.add_resource(delete_record, "/records/<string:record>")
+api.add_resource(allFrequencies, "/frequencyData")
 
 if __name__ == '__main__':
-    app.run( host='0.0.0.0', debug= False, threaded=True, port=8000)
+    app.run( host='0.0.0.0', debug= True, threaded=True, port=8000)
 
 

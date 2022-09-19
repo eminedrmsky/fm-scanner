@@ -28,7 +28,16 @@
                         {% set second = hist.length%60 %}
                         {% set minute = (hist.length-second)/60 %}
                         <td>{{minute}} dk {{second}} sn</td>
-                        <td>{{hist.info}}</td>
+                        <td class="hoverable">
+                            
+                            <span class="hoverable__main">
+                                data is here
+                            </span>
+                            <span class="hoverable__tooltip">
+                                {{hist.info}} <br>
+                            </span>
+
+                        </td>
                     </tr>
                     {%endfor%}
                     </tbody>
@@ -38,5 +47,33 @@
     </div>
 </section>
 
+<style>
+    .hoverable{
+        position: relative;
+        border-bottom: 1px dotted black;
+    }
+
+    .hoverable>.hoverable__tooltip{
+        display: none;
+
+        }
+
+    .hoverable:hover>.hoverable__tooltip{
+            display: inline;
+            position: absolute;
+            z-index: 1;
+            left: 0;
+            top: 30%;
+            background-color: rgb(66, 66, 66);
+            color: #fff;
+            text-align: center;
+            border-radius: 5px 5px;
+            transition: opacity 1s ease-in-out;
+        
+        }
+
+
+        
+</style>
 
 {% endblock %}

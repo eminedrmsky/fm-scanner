@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request, Response
 from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-import urllib.request, json
+import urllib.request, urllib.parse, json
 from abe import main
 from time import *
 import numpy as np
@@ -23,11 +23,11 @@ urlbase="http://192.168.1.28:8000"
 #SQLAlchemy modelleri
 class status(db.Model):
     freq    = db.Column(db.Integer, unique = True, primary_key=True)
+    kanal   = db.Column(db.Text)
     resp1 	= db.Column(db.Integer)
     rssi 	= db.Column(db.Integer)
     snr 	= db.Column(db.Integer)
     stat 	= db.Column(db.Text)
-    kanal   = db.Column(db.Text)
 
     def __init__(self, freq, kanal, resp1, rssi, snr, stat):
         self.freq = freq
@@ -39,7 +39,7 @@ class status(db.Model):
 
 class ParameterSchema(ma.Schema):
     class Meta:
-        fields = ('freq', 'Kanal', 'resp1', 'rssi', 'snr', 'stat')
+        fields = ('freq', 'kanal', 'resp1', 'rssi', 'snr', 'stat')
 
 parameter_schema = ParameterSchema()
 parameters_schema = ParameterSchema(many = True)
@@ -82,30 +82,39 @@ CurrentChannel = 0
 Frequency_Scan = main.SerialCommunication()
 
 def getFrequencies():
-    url= urlbase + "/parameters"
+    url= urlbase + "/frequencyData"
     response = urllib.request.urlopen(url)
     data =response.read()
     dict =json.loads(data)
+    print(dict)
     return dict
 
+def postFrequencyData():
+    data = { 'test1': 10, 'test2': 20 }
+    data = urllib.parse.urlencode(data).encode()
+    req =  urllib.request.Request( urlbase + "/frequencyData", data=data) # this will make the method "POST"
+    resp = urllib.request.urlopen(req)
+    print(resp.read())
+
 try:
-    frequencyData = getFrequencies()
+    frequencyData = getFrequencies()  
     db.session.query(status).delete()
     db.session.commit()
 
     for frequency in frequencyData:
         freq = frequency['freq']
-        Kanal = frequency['Kanal']
+        kanal = frequency['kanal']
         resp1 = 0
         rssi = 0
         snr = 0
         stat = " "
-        new_frequency = status(freq, Kanal, resp1, rssi, snr, stat)
+        new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
         db.session.add(new_frequency)
         db.session.commit()
 
 except Exception as e:
     print(e)
+
 
 # SocketFlag = False ###https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
 
@@ -178,10 +187,25 @@ def MainPage():
                 
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
 
-            elif task == 'hepsinidinle':
-                Frequency_Scan.Module_1()
-                Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
+            elif task == 'Kanal Listesini Güncelle':
+                try:
+                    frequencyData = getFrequencies()  
+                    db.session.query(status).delete()
+                    db.session.commit()
 
+                    for frequency in frequencyData:
+                        freq = frequency['freq']
+                        kanal = frequency['kanal']
+                        resp1 = 0
+                        rssi = 0
+                        snr = 0
+                        stat = " "
+                        new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
+                        db.session.add(new_frequency)
+                        db.session.commit()
+
+                except Exception as e:
+                    print(e)
             else:
                 ClickedChannel = int(request.form["kanalFrekansı"])
                 for t in text:
@@ -194,7 +218,7 @@ def MainPage():
 
 @app.route('/records')
 def showRecords():
-    hists = records.query.all()
+    hists = records.query.all()      
     return render_template('recordings.html', hists = hists)
 
 #############################################################API END POINTS##########################################################################################
@@ -210,13 +234,13 @@ class Frequency(Resource):
     def post(self,frequency):    
 
         freq = request.json['freq']
-        Kanal = request.json['Kanal']
-        resp1 = request.json['resp1']
-        rssi = request.json['rssi']
-        snr = request.json['snr']
-        stat = request.json['stat']
+        kanal = request.json['kanal']
+        resp1 = 0
+        rssi = 0
+        snr = 0
+        stat = " "
 
-        new_frequency = status(freq, Kanal, resp1, rssi, snr, stat)
+        new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
 
         db.session.add(new_frequency)
         db.session.commit()
@@ -227,18 +251,18 @@ class Frequency(Resource):
         parameters = status.query.get(frequency)
 
         freq = request.json['freq']
-        Kanal = request.json['Kanal']
-        resp1 = request.json['resp1']
-        rssi = request.json['rssi']
-        snr = request.json['snr']
-        stat = request.json['stat']
+        kanal = request.json['kanal']
+        # resp1 = request.json['resp1']
+        # rssi = request.json['rssi']
+        # snr = request.json['snr']
+        # stat = request.json['stat']
 
         parameters.freq = freq
-        parameters.Kanal = Kanal
-        parameters.resp1 = resp1
-        parameters.rssi = rssi
-        parameters.snr = snr
-        parameters.stat = stat
+        parameters.kanal = kanal
+        # parameters.resp1 = resp1
+        # parameters.rssi = rssi
+        # parameters.snr = snr
+        # parameters.stat = stat
 
         db.session.commit()
 
@@ -334,7 +358,7 @@ api.add_resource(Records, "/records")
 api.add_resource(delete_record, "/records/<string:record>")
 
 if __name__ == '__main__':
-    app.run( host='0.0.0.0', debug= False, threaded=True, port=3000)
+    app.run( host='0.0.0.0', debug= True, threaded=True, port=2000)
 
 
     

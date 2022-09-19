@@ -371,6 +371,9 @@ class DatabaseProcess():
         crsr = self.cursor
         crsr.execute("UPDATE medium SET date = ?, temp = ?, hum = ?", (date, temp, hum))
         conn.commit()
+    
+
+
 
 
 
