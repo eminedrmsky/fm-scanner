@@ -96,24 +96,24 @@ def postFrequencyData():
     resp = urllib.request.urlopen(req)
     print(resp.read())
 
-try:
-    frequencyData = getFrequencies()  
-    db.session.query(status).delete()
-    db.session.commit()
+# try:
+#     frequencyData = getFrequencies()  
+#     db.session.query(status).delete()
+#     db.session.commit()
 
-    for frequency in frequencyData:
-        freq = frequency['freq']
-        kanal = frequency['kanal']
-        resp1 = 0
-        rssi = 0
-        snr = 0
-        stat = " "
-        new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
-        db.session.add(new_frequency)
-        db.session.commit()
+#     for frequency in frequencyData:
+#         freq = frequency['freq']
+#         kanal = frequency['kanal']
+#         resp1 = 0
+#         rssi = 0
+#         snr = 0
+#         stat = " "
+#         new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
+#         db.session.add(new_frequency)
+#         db.session.commit()
 
-except Exception as e:
-    print(e)
+# except Exception as e:
+#     print(e)
 
 
 # SocketFlag = False ###https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
@@ -142,12 +142,13 @@ def audio():
                         data =s.recv(4096)
                         data_array = np.frombuffer(data, dtype='int16')
                         channel0 = data_array[0::2]
-                        data = channel0.tostring()               
+                        data = channel0.tostring()   
+                    yield(data)      
+                          
                 except Exception as e:
                     first_run = True
                     print(e)
                     
-                yield(data)
 
     except Exception as e:
         print(e)
@@ -218,7 +219,7 @@ def MainPage():
 
 @app.route('/records')
 def showRecords():
-    hists = records.query.all()      
+    hists = records.query.all()    
     return render_template('recordings.html', hists = hists)
 
 #############################################################API END POINTS##########################################################################################
@@ -358,7 +359,7 @@ api.add_resource(Records, "/records")
 api.add_resource(delete_record, "/records/<string:record>")
 
 if __name__ == '__main__':
-    app.run( host='0.0.0.0', debug= True, threaded=True, port=2000)
+    app.run( host='0.0.0.0', debug= True, threaded=True, port=3000)
 
 
     

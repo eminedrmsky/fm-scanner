@@ -6,12 +6,35 @@
     <div class="alert alert-light" role="alert">
         <div class="container">
             <div class="row justify-content-md-center">
-                <table class="table table-borderless table-responsive">
+                <div class="d-flex flex-row w-75 mx-auto">
+                    <div class="row" >
+                        <div class='row' style="margin-left: 19px;"> From:</div>
+                            <input type="date" name="from_Date"  style="margin-left: 30px; font-size: 20px; " 
+                            placeholder="From_Date" id="From_Date" required="" > 
+                        <div class='row' style="margin-left: 19px;">  To:</div>
+                        <input type="date" name="to_Date" style="margin-left: 30px;font-size: 20px;" 
+                            placeholder="To_Date" id="To_Date" required="" > 
+                            <hr>
+                        <input type="submit" value="Apply" id="btn_submit" style=" width:90px; 
+                            height:45px; margin-left: 40px; margin-bottom: 30px;"
+                            class="btn btn-outline-dark" onclick="searchDate()">
+                        <input type="reset" value="Reset" id="btn_submit" style=" width:90px; 
+                            height:45px;margin-left: 65px; margin-bottom: 30px;"
+                            class="btn btn-outline-dark" onclick="resetTable()">
+                            <a href="/static/media/logo/csv.jpg" download="csv">
+                                <img src="/static/media/logo/csv.jpg" alt="" width="100" height="100">
+                                Download sound data recorded between chosen dates as CSV
+                              </a>
+                    </div>
+                    
+                </div>
+
+                <table id = "recordings" class="table table-borderless table-responsive">
                     <thead>
                     <tr class="border-bottom text-center">
-                        <th scope="col">İsim</th>
+                        <th scope="col">İsim </th>
                         <th scope="col">Gösterim</th>
-                        <th scope="col">Uzunluk</th>
+                        <th scope="col">Uzunluk </th>
                         <th scope="col">Açıklama</th>
                     </tr>
                     </thead>
@@ -75,5 +98,44 @@
 
         
 </style>
+
+<script>
+    function searchDate() {
+            var input_startDate, input_stopDate, tr, i;
+        // get the values and convert to date
+        input_startDate =  new Date(document.getElementById("From_Date").value);
+        input_stopDate =  new Date(document.getElementById("To_Date").value);
+
+        tr = document.querySelectorAll("#recordings tbody tr");
+
+        for (let i = 0; i < tr.length; i++) {
+            // ensure we have a relevant td
+            let td = tr[i].getElementsByTagName("td");
+            if (!td || !td[0]) continue;
+
+            // you need to get the text and convert to date
+            let td_date = new Date(td[0].textContent);
+            
+
+            // now you can compare dates correctly
+            if (td_date) {
+            if (td_date >= input_startDate && td_date <= input_stopDate) {
+                // show the row by setting the display property
+                tr[i].style.display = 'table-row;';
+            } else {
+                // hide the row by setting the display property
+                tr[i].style.display = 'none';
+            }
+            }
+        }
+        }
+
+    function resetTable(){
+
+
+    }
+</script>
+
+
 
 {% endblock %}
