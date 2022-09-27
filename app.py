@@ -7,6 +7,7 @@ from abe import main
 from time import *
 import numpy as np
 import socket
+from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -215,11 +216,23 @@ def MainPage():
                     else:
                         pass
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
+
     return render_template('mainpage.html', items = items, CurrentChannel = CurrentChannel, mediums = mediums, text = text, hists = hists) #socketflagi buraya ekle
 
-@app.route('/records')
+@app.route('/records', methods=['GET', 'POST'])
 def showRecords():
     hists = records.query.all()    
+    if request.method == 'POST':
+        newHists =[]
+        fromDatestr = request.form["from_Date"]
+        fromDate = datetime.strptime( fromDatestr, '%Y-%m-%d')
+        toDatestr = request.form["to_Date"]
+        toDate = datetime.strptime( toDatestr, '%Y-%m-%d')
+        for hist in hists:
+            date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
+            if date >= fromDate and date <= toDate:
+                newHists.append(hist)
+        return  render_template('recordings.html', hists = newHists)  
     return render_template('recordings.html', hists = hists)
 
 #############################################################API END POINTS##########################################################################################
