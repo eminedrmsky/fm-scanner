@@ -7,31 +7,39 @@
         <div class="container">
             <div class="row justify-content-md-center">
                 <div class="d-flex flex-row w-75 mx-auto">
-                    <div class="col" >
-                <form action="#" method="post">
+                    <div class="col">
+                    <form action="#" method="post">
+                        <div class="row" >
+                            <div class='row' style="margin-left: 19px;"> From:</div>
+                                <input type="date" name="from_Date"  style="margin-left: 30px; font-size: 20px; width:400px; " 
+                                placeholder="From_Date" id="From_Date" required="" > 
+                            <div class='row' style="margin-left: 19px;">  To:</div>
+                            <input type="date" name="to_Date" style="margin-left: 30px;font-size: 20px; width:400px;" 
+                                placeholder="To_Date" id="To_Date" required="" > 
+                        </div>
+                        <hr>
+                        <div class="row" >
+                            <input type="submit" value="Apply" id="Apply" style=" width:90px; 
+                                height:45px; margin-left: 40px; margin-bottom: 30px;"
+                                class="btn btn-outline-dark">
+                        </form>
+                            <a class="btn btn-outline-dark" style=" width:90px; 
+                                        height:45px;margin-left: 10px; margin-bottom: 30px;"
+                                href="{{ url_for('showRecords') }}">Reset</a>
+                        </div>
+                    </div>
+                <div class="col" style="margin-left: 350px;">
+                    <a href="/static/media/logo/csv.jpg" download="csv" class="hoverable2">
 
-                        <div class='row' style="margin-left: 19px;"> From:</div>
-                            <input type="date" name="from_Date"  style="margin-left: 30px; font-size: 20px; " 
-                            placeholder="From_Date" id="From_Date" required="" > 
-                        <div class='row' style="margin-left: 19px;">  To:</div>
-                        <input type="date" name="to_Date" style="margin-left: 30px;font-size: 20px;" 
-                            placeholder="To_Date" id="To_Date" required="" > 
-                            <hr>
-                        <input type="submit" value="Apply" id="Apply" style=" width:90px; 
-                            height:45px; margin-left: 40px; margin-bottom: 30px;"
-                            class="btn btn-outline-dark">
-                </form>
-                        <a class="btn btn-outline-dark" style=" width:90px; 
-                                    height:45px;margin-left: 65px; margin-bottom: 30px;"
-                            href="{{ url_for('showRecords') }}">Reset</a>
-                    </div>
-                    <div>
-                    <a href="/static/media/logo/csv.jpg" download="csv">
-                        <img src="/static/media/logo/csv.jpg" alt="" width="150" height="150">
-                        Download sound data recorded between chosen dates as CSV
+                        <span class="hoverable2__main"></span>
+                            <img src="/static/media/logo/csv.jpg" alt="" width="150" height="150">
+                        </span>
+                        <span class="hoverable2__tooltip">
+                            Download data recorded between chosen dates as CSV file <br>
+                        </span>
                       </a>
-                    </div>
                 </div>
+            </div>
 
                 <table id = "recordings" class="table table-borderless table-responsive">
                     <thead>
@@ -77,7 +85,6 @@
 <style>
     .hoverable{
         position: relative;
-        border-bottom: 1px dotted black;
     }
 
     .hoverable>.hoverable__tooltip{
@@ -95,6 +102,29 @@
             color: #fff;
             text-align: center;
             border-radius: 5px 5px;
+            transition: opacity 1s ease-in-out;
+        
+        }
+
+    .hoverable2{
+        position: relative;
+    }
+
+    .hoverable2>.hoverable2__tooltip{
+        display: none;
+
+        }
+
+    .hoverable2:hover>.hoverable2__tooltip{
+            display: inline;
+            position: absolute;
+            z-index: 1;
+            left: 15px;
+            top: 300%;
+            background-color: rgb(179, 255, 182);
+            color: rgb(0, 163, 238);
+            text-align: center;
+            border-radius: 10px 10px;
             transition: opacity 1s ease-in-out;
         
         }
