@@ -301,10 +301,10 @@ class DatabaseProcess():
         crsr.execute("CREATE TABLE IF NOT EXISTS status (freq INT PRIMARY KEY, resp1 INT, rssi INT, snr INT)") 
         conn.commit()
 
-    def add_value(self,freq,resp1,rssi,snr):
+    def add_value(self,date,freq,resp1,rssi,snr, info, temp, hum):
         conn = self.con
         crsr = self.cursor
-        crsr.execute("INSERT INTO status VALUES(?,?,?,?)",(freq,resp1,rssi,snr))
+        crsr.execute("INSERT INTO soundData VALUES(?,?,?,?,?,?,?,?)",(date,freq,resp1,rssi,snr,info,temp,hum))
         conn.commit()
 
     def get_all_data(self): #TÜM SESLERİ 30 SN ARALIKLA DİNLEMEK İÇİN
@@ -370,6 +370,18 @@ class DatabaseProcess():
         conn = self.con
         crsr = self.cursor
         crsr.execute("UPDATE medium SET date = ?, temp = ?, hum = ?", (date, temp, hum))
+        conn.commit()
+
+    def end_recording(self):
+        conn = self.con
+        crsr = self.cursor
+        crsr.execute("UPDATE dinleme SET stat = 0 where var = 'record'")
+        conn.commit()
+    
+    def start_recording(self):
+        conn = self.con
+        crsr = self.cursor
+        crsr.execute("UPDATE dinleme SET stat = 1 where var = 'record'")
         conn.commit()
     
 

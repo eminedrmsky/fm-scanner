@@ -8,6 +8,7 @@ from time import *
 import numpy as np
 import socket
 from datetime import datetime
+import csv
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -96,6 +97,8 @@ def postFrequencyData():
     req =  urllib.request.Request( urlbase + "/frequencyData", data=data) # this will make the method "POST"
     resp = urllib.request.urlopen(req)
     print(resp.read())
+
+        
 
 # try:
 #     frequencyData = getFrequencies()  
@@ -232,7 +235,7 @@ def showRecords():
             date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
             if date >= fromDate and date <= toDate:
                 newHists.append(hist)
-        return  render_template('recordings.html', hists = newHists)  
+        return  render_template('recordings.html', hists = newHists)   
     return render_template('recordings.html', hists = hists)
 
 #############################################################API END POINTS##########################################################################################

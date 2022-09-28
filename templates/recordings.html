@@ -29,7 +29,7 @@
                         </div>
                     </div>
                 <div class="col" style="margin-left: 350px;">
-                    <a href="/static/media/logo/csv.jpg" download="csv" class="hoverable2">
+                    <a href="/home/pi/fm-scanner/fm-scanner/static/media/example.csv" download="csv" class="hoverable2">
 
                         <span class="hoverable2__main"></span>
                             <img src="/static/media/logo/csv.jpg" alt="" width="150" height="150">
@@ -38,6 +38,9 @@
                             Download data recorded between chosen dates as CSV file <br>
                         </span>
                       </a>
+                      <input class="btn btn-outline-dark" type="submit" id="indir" name="indir"
+                      value="indir" onclick="get()">
+                    </input>
                 </div>
             </div>
 
@@ -132,5 +135,63 @@
 
         
 </style>
+
+<script>
+    
+        const download = function (data) {
+        
+            // Creating a Blob for having a csv file format
+            // and passing the data with type
+            const blob = new Blob([data], { type: 'text/csv' });
+
+            // Creating an object for downloading url
+            const url = window.URL.createObjectURL(blob)
+
+            // Creating an anchor(a) tag of HTML
+            const a = document.createElement('a')
+
+            // Passing the blob downloading url
+            a.setAttribute('href', url)
+
+            // Setting the anchor tag attribute for downloading
+            // and passing the download file name
+            a.setAttribute('download', 'download.csv');
+
+            // Performing a download with click
+            a.click()
+        }
+
+        const csvmaker = function (data) {
+
+            // Empty array for storing the values
+            csvRows = [];
+
+            // Headers is basically a keys of an
+            // object which is id, name, and
+            // profession
+            const headers = ['name', 'length', 'info'];
+
+            // As for making csv format, headers
+            // must be separated by comma and
+            // pushing it into array
+            csvRows.push(headers.join(','));
+
+            // Pushing Object values into array
+            // with comma separation
+            const values = Object.values(data).join(',');
+            csvRows.push(values)
+
+            // Returning the array joining with new line
+            return csvRows.join('\n')
+        }
+
+        const get = async function () {
+            var data = '{{hists}}'
+            const csvdata = csvmaker(data);
+            download(csvdata);
+        }
+
+    
+</script>
 
 {% endblock %}

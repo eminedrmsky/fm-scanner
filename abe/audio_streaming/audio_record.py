@@ -8,6 +8,7 @@ from pytz import timezone
 import sqlite3
 import numpy as np
 import socket
+from time import sleep
 
 try:
     # TCP server
@@ -49,6 +50,12 @@ class databaseBusiness():
         info_str = info_str.join(info)
         cursor.execute("INSERT INTO records VALUES(?,?,?)",(wav_output_filename, record_secs, info_str))
         con.commit()
+    
+    def recording_process(self):
+        crsr = self.cursor
+        crsr.execute("SELECT stat FROM dinleme WHERE var = 'record'") 
+        data = crsr.fetchall()
+        return data[0][0]
 
 
 def newest(path):
@@ -95,7 +102,7 @@ class audioRecording():
         frames = []
         first_run = True
         # loop through stream and append audio chunks to frame array
-        for ii in range(0,int((samp_rate/chunk)*record_secs)):
+        while(dbProcess.recording_process()):
             try:
                 if first_run :
                     data =s.recv(4096)

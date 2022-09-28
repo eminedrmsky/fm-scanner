@@ -67,6 +67,7 @@ class SerialCommunication(object):
 
         os.system("python3 abe/audio_streaming/audio_record.py &") # for recordings
         freq_index_module0 = 0
+        dbProccess.start_recording()
         while (freq_index_module0 < len(support.freqList) ):
             if dbProccess.get_data_serial() == 0:
                 print("serial available")
@@ -82,25 +83,35 @@ class SerialCommunication(object):
                 print("RSSI: ", rssi)
                 print("SNR: ", snr)
 
+                # (temperature, humidity) = sht21.measure(1)  # I2C-1 Port
+                # print("Temperature: %s °C  Humidity: %s %%" % (temperature, humidity))
+                # sleep(1)
+                # dbProccess.update_temp(now, temperature, humidity)
+
+                # if temperature > 60.0 :
+                #    logger.warning(f"{now} - Temperature, higher than {temperature} degrees!!")
+
                 if (snr == 0):
-                    dbProccess.update_data(freq,resp1,rssi,snr,"There is no sound!")
+                    try:
+                        dbProccess.update_data(freq,resp1,rssi,snr,"There is no sound!")
+                        dbProccess.add_value(now,freq,resp1,rssi,snr, "There is no sound!",0,0)  #convert zeros to temperature and humidity
+                    except Exception as e:
+                        print(e)
                 else:
-                    dbProccess.update_data(freq,resp1,rssi,snr,"Sound is OK!")
+                    try:
+                        dbProccess.update_data(freq,resp1,rssi,snr,"Sound is OK!")
+                        dbProccess.add_value(now,freq,resp1,rssi,snr,"Sound is OK!",0,0)   #convert zeros to temperature and humidity
+                    except Exception as e:
+                        print(e)
 
                 logger.info(f"{now} - freq: {freq} - resp1: {resp1}, rssi: {rssi}, snr: {snr}")
                 sleep(5)
-                #SENSOR
-            # (temperature, humidity) = sht21.measure(1)  # I2C-1 Port
-            # print("Temperature: %s °C  Humidity: %s %%" % (temperature, humidity))
-            # sleep(1)
-            # dbProccess.update_temp(now, temperature, humidity)
-
-                #if temperature > 60.0 :
-                #    logger.warning(f"{now} - Temperature, higher than {temperature} degrees!!")
                 ser.flush()
             else:
                 print("serial not available")
                 sleep(1)
+        
+        dbProccess.end_recording()
             
         
             
