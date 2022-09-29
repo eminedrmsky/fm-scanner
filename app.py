@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request, Response
 from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from dataclasses import dataclass
 import urllib.request, urllib.parse, json
 from abe import main
 from time import *
@@ -63,6 +64,7 @@ class MediumSchema(ma.Schema):
 
 medium_schema = MediumSchema(many = True)
 
+@dataclass
 class records(db.Model):
     name      = db.Column(db.Text, primary_key = True)
     length    = db.Column(db.Integer)
@@ -224,7 +226,9 @@ def MainPage():
 
 @app.route('/records', methods=['GET', 'POST'])
 def showRecords():
-    hists = records.query.all()    
+    hists = records.query.all()
+    jsonHists = records_schema.dump(records.query.all())
+    #jsonHists = jsonify(hists)
     if request.method == 'POST':
         newHists =[]
         fromDatestr = request.form["from_Date"]
@@ -235,8 +239,9 @@ def showRecords():
             date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
             if date >= fromDate and date <= toDate:
                 newHists.append(hist)
-        return  render_template('recordings.html', hists = newHists)   
-    return render_template('recordings.html', hists = hists)
+        newjsonHists = records_schema.dump(newHists)
+        return  render_template('recordings.html', hists = newHists, jsonHists = newjsonHists)   
+    return render_template('recordings.html', hists = hists, jsonHists = jsonHists)
 
 #############################################################API END POINTS##########################################################################################
 

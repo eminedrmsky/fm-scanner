@@ -29,18 +29,17 @@
                         </div>
                     </div>
                 <div class="col" style="margin-left: 350px;">
-                    <a href="/home/pi/fm-scanner/fm-scanner/static/media/example.csv" download="csv" class="hoverable2">
-
+                    <div class="hoverable2" onclick="get()">
                         <span class="hoverable2__main"></span>
                             <img src="/static/media/logo/csv.jpg" alt="" width="150" height="150">
                         </span>
                         <span class="hoverable2__tooltip">
                             Download data recorded between chosen dates as CSV file <br>
                         </span>
-                      </a>
-                      <input class="btn btn-outline-dark" type="submit" id="indir" name="indir"
-                      value="indir" onclick="get()">
-                    </input>
+                </div>
+                <input class="btn btn-outline-dark" type="submit" id="indir" name="indir"
+                value="indir"  style="margin-left: 50px; " onclick="get()">
+              </input>
                 </div>
             </div>
 
@@ -122,8 +121,8 @@
             display: inline;
             position: absolute;
             z-index: 1;
-            left: 15px;
-            top: 300%;
+            left: 30px;
+            top: 70%;
             background-color: rgb(179, 255, 182);
             color: rgb(0, 163, 238);
             text-align: center;
@@ -169,12 +168,12 @@
             // Headers is basically a keys of an
             // object which is id, name, and
             // profession
-            const headers = ['name', 'length', 'info'];
+             const headers = ['name', 'length', 'info'];
 
             // As for making csv format, headers
             // must be separated by comma and
             // pushing it into array
-            csvRows.push(headers.join(','));
+             csvRows.push(headers);
 
             // Pushing Object values into array
             // with comma separation
@@ -186,8 +185,8 @@
         }
 
         const get = async function () {
-            var data = '{{hists}}'
-            const csvdata = csvmaker(data);
+            var data = '{{jsonHists}}'
+            const csvdata = csvmaker(data);          
             download(csvdata);
         }
 
