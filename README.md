@@ -57,6 +57,11 @@ virtualenv env --python=/usr/local/bin/python3.7.4
 sudo apt install portaudio19-dev
 pip install PyAudio
 ```
+### I2C enable
+```
+sudo raspi-config
+```
+interface options >>> enable I2C
 
 ### I2S driver install and enable
 
