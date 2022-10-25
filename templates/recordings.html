@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<hr>
 <section class="container-fluid" style="background-color:rgb(255, 255, 255);">
     <div class="alert alert-light" role="alert">
         <div class="container">
@@ -17,28 +16,28 @@
                             <input type="date" name="to_Date" style="margin-left: 30px;font-size: 20px; width:400px;" 
                                 placeholder="To_Date" id="To_Date" required="" > 
                         </div>
-                        <hr>
+                        
                         <div class="row" >
                             <input type="submit" value="Apply" id="Apply" style=" width:90px; 
-                                height:45px; margin-left: 40px; margin-bottom: 30px;"
+                                height:45px; margin-left: 40px; margin-bottom: 30px; margin-top: 10px;"
                                 class="btn btn-outline-dark">
                         </form>
                             <a class="btn btn-outline-dark" style=" width:90px; 
-                                        height:45px;margin-left: 10px; margin-bottom: 30px;"
+                                        height:45px;margin-left: 10px; margin-bottom: 30px; margin-top: 10px;"
                                 href="{{ url_for('showRecords') }}">Reset</a>
                         </div>
                     </div>
                 <div class="col" style="margin-left: 350px;">
                     <div class="hoverable2" onclick="get()">
-                        <span class="hoverable2__main"></span>
+                        <span class="hoverable2__main" style="margin-right: 25px;"></span>
                             <img src="/static/media/logo/csv.jpg" alt="" width="150" height="150">
                         </span>
                         <span class="hoverable2__tooltip">
                             Download data recorded between chosen dates as CSV file <br>
                         </span>
                 </div>
-                <input class="btn btn-outline-dark" type="submit" id="indir" name="indir"
-                value="indir"  style="margin-left: 50px; " onclick="get()">
+                <input class="btn btn-outline-dark" type="submit" id="Download" name="Download"
+                value="Download"  style="margin-left: 50px; " onclick="get()">
               </input>
                 </div>
             </div>
@@ -46,10 +45,10 @@
                 <table id = "recordings" class="table table-borderless table-responsive">
                     <thead>
                     <tr class="border-bottom text-center">
-                        <th scope="col">İsim </th>
-                        <th scope="col">Gösterim</th>
-                        <th scope="col">Uzunluk </th>
-                        <th scope="col">Açıklama</th>
+                        <th scope="col">Name </th>
+                        <th scope="col">Recording</th>
+                        <th scope="col">Length</th>
+                        <th scope="col">Information</th>
                     </tr>
                     </thead>
                     <tbody>

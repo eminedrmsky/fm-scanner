@@ -83,13 +83,13 @@ class SerialCommunication(object):
                 print("RSSI: ", rssi)
                 print("SNR: ", snr)
 
-                # (temperature, humidity) = sht21.measure(1)  # I2C-1 Port
-                # print("Temperature: %s °C  Humidity: %s %%" % (temperature, humidity))
-                # sleep(1)
-                # dbProccess.update_temp(now, temperature, humidity)
+                (temperature, humidity) = sht21.measure(1)  # I2C-1 Port
+                print("Temperature: %s °C  Humidity: %s %%" % (temperature, humidity))
+                sleep(1)
+                dbProccess.update_temp(now, temperature, humidity)
 
-                # if temperature > 60.0 :
-                #    logger.warning(f"{now} - Temperature, higher than {temperature} degrees!!")
+                if temperature > 60.0 :
+                   logger.warning(f"{now} - Temperature, higher than {temperature} degrees!!")
 
                 if (snr == 0):
                     try:

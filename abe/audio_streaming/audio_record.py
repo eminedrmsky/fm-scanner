@@ -127,7 +127,7 @@ form_1 = pyaudio.paInt16 # 16-bit resolution
 chans = 2 # 1 channel
 samp_rate = 44100 # 44.1kHz sampling rate
 chunk = 4096 # 2^12 samples for buffer
-SecondsPerChannel = 15 
+SecondsPerChannel = 8 
 DAY = 1
 HOUR = 1
 
@@ -140,7 +140,7 @@ dbProcess = databaseBusiness(con,cursor)
 recordingProcess = audioRecording(s)
 
 NumberOfChannels = dbProcess.getNumberOfFrequencies()
-record_secs = SecondsPerChannel * NumberOfChannels *2  # seconds to record
+record_secs = SecondsPerChannel * NumberOfChannels   # seconds to record
 
 wav_output_filename, now = recordingProcess.getTime()
 recordingProcess.deleteRecords(now,path,DAY,HOUR)

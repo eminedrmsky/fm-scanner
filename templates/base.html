@@ -79,12 +79,11 @@
             <ul class="navbar-nav me-auto mb-sm-0">
                 <li class="nav-item">
                     <a class="nav-link text-nowrap {% if request.path == '/' %} active {% endif %}"
-                       href="{{ url_for('MainPage') }}">Ana
-                        sayfa</a>
+                       href="{{ url_for('MainPage') }}">Main Page</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-nowrap {% if request.path == '/records' %} active {% endif %}"
-                       href="{{ url_for('showRecords') }}">Kayıtlar</a>
+                       href="{{ url_for('showRecords') }}">Records</a>
                 </li>
             </ul>
         </div>

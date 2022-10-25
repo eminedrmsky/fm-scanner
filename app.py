@@ -10,6 +10,7 @@ import numpy as np
 import socket
 from datetime import datetime
 import csv
+import config
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -21,7 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///abe/get_status.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-urlbase="http://192.168.1.28:8000"
+urlbase= config.urlbase
 
 #SQLAlchemy modelleri
 class status(db.Model):
@@ -78,8 +79,6 @@ records_schema = RecordsSchema(many = True)
 record_schema = RecordsSchema()
 
 ####################################################################################################################################
-
-path = "/home/pi/fm-scanner/fm-scanner/SoundFiles/"
 
 global CurrentChannel
 CurrentChannel = 0
@@ -234,7 +233,7 @@ def showRecords():
         fromDatestr = request.form["from_Date"]
         fromDate = datetime.strptime( fromDatestr, '%Y-%m-%d')
         toDatestr = request.form["to_Date"]
-        toDate = datetime.strptime( toDatestr, '%Y-%m-%d')
+        toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
         for hist in hists:
             date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
             if date >= fromDate and date <= toDate:
@@ -380,7 +379,7 @@ api.add_resource(Records, "/records")
 api.add_resource(delete_record, "/records/<string:record>")
 
 if __name__ == '__main__':
-    app.run( host='0.0.0.0', debug= True, threaded=True, port=3000)
+    app.run( host=config.host, debug= True, threaded=True, port=config.port)
 
 
     

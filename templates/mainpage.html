@@ -23,9 +23,9 @@
             <div class="card-body">
                 <h3>{{ items[CurrentChannel].kanal }}</h3>
                 <h4>{{ items[CurrentChannel].freq/100 }} Hz</h4>
-                <hr>
+                
                 <form method="POST" id="main-form">
-                    <div class="btn-group-vertical align-items-center">
+                    <div class="btn-group-vertical align-items-center" style=" margin-top : 20px">
                         <div class="d-inline mb-2">
                             <audio autoplay id="audioplayer">
                                 <source src="{{ url_for('audio') }}" type="audio/x-wav;codec=pcm">
@@ -44,38 +44,38 @@
                             <input type="range" class="form-range" id="volume-range" oninput="volumeOnInput()" value="100">
                         </div>
                         <button class="btn btn-outline-dark" type="submit" id="Kanal Listesini Güncelle" name="Kanal Listesini Güncelle"
-                                value="Kanal Listesini Güncelle" onclick="showLoader()">Kanal Listesini Güncelle
+                                value="Kanal Listesini Güncelle" onclick="showLoader()">Update Channel List
                         </button>
                     </div>
                     <div class="mt-1" id="hepsinidinle-info">
-                        <h6>Kanal Listesi Güncelleniyor...</h6>
+                        <h6>Channel List Being Updated...</h6>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    <div class="d-flex flex-row w-75 mx-auto">
+    <div class="d-flex flex-row w-75 mx-auto" style=" margin-bottom : 25px">
         <div class="col">
             <div class="d-flex flex-row border border-dark rounded p-0 m-2 justify-content-center">
-                <div class="d-inline-block pt-2 h5">Sıcaklık: {{mediums[0].temp}} °C</div>
+                <div class="d-inline-block pt-2 h5">Temperature: {{mediums[0].temp}} °C</div>
                 {% if mediums[0].temp > 60 %}
-                <div class="d-inline-block ms-3" id="temp-status-high">(UYARI! Sıcaklık çok yüksek!)</div>
+                <div class="d-inline-block ms-3" id="temp-status-high">(DANGER! Temperature Level is Higher Than Expected)</div>
                 {% else %}
-                <div class="d-inline-block ms-3 pt-2" id="temp-status-normal">(Normal seviyede)</div>
+                <div class="d-inline-block ms-3 pt-2" id="temp-status-normal">(Normal Temperature)</div>
                 {% endif %}
             </div>
         </div>
         <div class="col">
             <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
-                Nem: {{mediums[0].hum}} %
+                Humidity: {{mediums[0].hum}} %
             </div>
         </div>
     </div>
-    <hr>
-    <div class="d-flex flex-row w-75 mx-auto">
+    
+    <div class="d-flex flex-row w-75 mx-auto" style=" margin-bottom : 25px">
         <div class="col">
             <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
-                RSSI: {{items[CurrentChannel].rssi}}
+                Signal Power: {{items[CurrentChannel].rssi}} dBuV
             </div>
             <div class="progress m-2" style="height: 30px;">
                 <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
@@ -86,7 +86,7 @@
 
         <div class="col">
             <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
-                SNR: {{items[CurrentChannel].snr}}
+                Sound To Noise Ratio: {{items[CurrentChannel].snr}} dB
             </div>
             <div class="progress m-2" style="height: 30px;">
                 <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
@@ -95,11 +95,12 @@
             </div>
         </div>
     </div>
-    <hr>
+    
     <div class="d-flex flex-row w-50 mx-auto">
         <div class="col">
+            {% if items[CurrentChannel].resp1 == 0  %}
             <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
-                Resp1: {{items[CurrentChannel].resp1}}
+                Channel is not valid
             </div>
             <div class="progress m-2" style="height: 30px;">
                 <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
@@ -108,14 +109,28 @@
                      aria-valuemin="0"
                      aria-valuemax="5"></div>
             </div>
+            {% endif %}
+
+            {% if items[CurrentChannel].resp1 != 0  %}
+            <div class="d-flex flex-row border border-dark rounded p-2 m-2 justify-content-center h5">
+                Channel is valid
+            </div>
+            <div class="progress m-2" style="height: 30px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     style="width: {{items[CurrentChannel].resp1 * 20}}%;"
+                     aria-valuenow="{{items[CurrentChannel].resp1}}"
+                     aria-valuemin="0"
+                     aria-valuemax="5"></div>
+            </div>
+            {% endif %}
         </div>
 
     </div>
 
-    <div class="col">
-        <hr>
+    <div class="col" style=" margin-top : 25px">
+        
         <p class="fa fa-info-circle d-flex flex-row p-2 m-2 justify-content-center" style='color: grey;'>
-            Değerler {{hists[-1].name}} tarihinde güncellenmiştir.
+            Values last updated at {{hists[-1].name}}
         </p>
         
     </div>
