@@ -1,6 +1,58 @@
 import pyaudio
 import socket
 from _thread import start_new_thread
+import sqlite3
+from datetime import *
+from pytz import timezone
+#interrupt
+import sys
+import time
+import RPi.GPIO as GPIO
+import signal
+
+#interrupt configuration
+
+BUTTON_GPIO = 16 
+
+
+def getTime():
+    turkey = timezone('Europe/Istanbul')
+    now = datetime.now(turkey)
+    date =now.strftime("%Y.%m.%d %H:%M:%S")# name of .wav file
+    return date
+
+def signal_handler(sig,frame):
+    GPIO.cleanup()
+    print("exited")
+    sys.exit(0)
+
+def interrupt_handler(channel):
+
+    date = getTime()
+    try:
+        con = sqlite3.connect("/home/pi/fm-scanner/fm-scanner/abe/get_status.db") 
+        cursor = con.cursor()
+    except Exception as e:
+        print(e)
+
+    if GPIO.input(BUTTON_GPIO):
+        print("There is a power cut! Battery in use")
+        cursor.execute("INSERT INTO power VALUES(?,?)",(date, "There is a power cut! Battery in use"))
+        con.commit()
+    else:
+        print("Power came back! Battery is out")
+        cursor.execute("INSERT INTO power VALUES(?,?)",(date, "Power came back! Battery is out"))
+        con.commit() 
+
+
+GPIO.setmode(GPIO.BCM)
+    
+GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)   
+GPIO.add_event_detect(BUTTON_GPIO, GPIO.BOTH, 
+        callback=interrupt_handler, bouncetime = 150)
+    
+signal.signal(signal.SIGINT, signal_handler)
+
 
 ############################################################################################################################################################
 
@@ -69,6 +121,8 @@ def clientthread_record(port):
 
 
 #############################################################################################################################################################################3
+
+#tcp business
 
 audio = pyaudio.PyAudio()
 streaming = soundStreaming(audio)

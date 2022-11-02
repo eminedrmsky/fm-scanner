@@ -369,7 +369,7 @@ class DatabaseProcess():
     def update_temp(self, date, temp, hum):
         conn = self.con
         crsr = self.cursor
-        crsr.execute("UPDATE medium SET date = ?, temp = ?, hum = ?", (date, temp, hum))
+        crsr.execute("INSERT INTO medium VALUE(?,?,?)", (date, temp, hum))
         conn.commit()
 
     def end_recording(self):

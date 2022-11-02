@@ -60,8 +60,13 @@ class databaseBusiness():
 
 def newest(path):
     files = os.listdir(path)
-    paths = [os.path.join(path, basename) for basename in files]
+    paths = [os.path.join(path, basename) for basename in files if basename.endswith('.wav')]
     return max(paths, key=os.path.getctime)  
+
+def oldest(path):
+    files = os.listdir(path)
+    paths = [os.path.join(path, basename) for basename in files if basename.endswith('.wav')]
+    return min(paths, key=os.path.getctime)  
 
 
 class audioRecording():
@@ -95,6 +100,25 @@ class audioRecording():
                         print(e)
                 else:
                     pass
+
+    def deleteOneRecord(self, path):
+        folderSize = 0     
+        for file in os.listdir(path):  
+            if (file.endswith('.wav')):
+                    try:
+                        fp = os.path.join(path, file)
+                        folderSize += os.path.getsize(fp)
+                    except Exception as e:
+                        print(e)
+
+        print("Folder size: " + str(folderSize) +"bytes" + " " + str((folderSize*0.000931)/1000000) + "Gb" )
+        folderSizeGb = (folderSize*0.000931)/1000000
+        if folderSizeGb >= 10:
+            os.remove(oldest(path))
+            print(oldest(path) + " "+ "removed")
+        else:
+            pass
+
     
     def recordAudio(self,samp_rate,chunk,record_secs):
         s = self.s
@@ -131,6 +155,7 @@ SecondsPerChannel = 8
 DAY = 1
 HOUR = 1
 
+
 #adjusting time
 path='/home/pi/fm-scanner/fm-scanner/static/'
 logpath='/home/pi/fm-scanner/fm-scanner/logs/'
@@ -143,7 +168,7 @@ NumberOfChannels = dbProcess.getNumberOfFrequencies()
 record_secs = SecondsPerChannel * NumberOfChannels   # seconds to record
 
 wav_output_filename, now = recordingProcess.getTime()
-recordingProcess.deleteRecords(now,path,DAY,HOUR)
+recordingProcess.deleteOneRecord(path)
 
 frames = recordingProcess.recordAudio(samp_rate,chunk,record_secs)
 

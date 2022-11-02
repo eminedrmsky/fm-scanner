@@ -226,8 +226,6 @@ def MainPage():
 @app.route('/records', methods=['GET', 'POST'])
 def showRecords():
     hists = records.query.all()
-    jsonHists = records_schema.dump(records.query.all())
-    #jsonHists = jsonify(hists)
     if request.method == 'POST':
         newHists =[]
         fromDatestr = request.form["from_Date"]
@@ -238,9 +236,8 @@ def showRecords():
             date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
             if date >= fromDate and date <= toDate:
                 newHists.append(hist)
-        newjsonHists = records_schema.dump(newHists)
-        return  render_template('recordings.html', hists = newHists, jsonHists = newjsonHists)   
-    return render_template('recordings.html', hists = hists, jsonHists = jsonHists)
+        return  render_template('recordings.html', hists = newHists)   
+    return render_template('recordings.html', hists = hists)
 
 #############################################################API END POINTS##########################################################################################
 
