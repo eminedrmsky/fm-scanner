@@ -78,7 +78,7 @@ class audioRecording():
         turkey = timezone('Europe/Istanbul')
         now = datetime.now(turkey)
         wav_output_filename =now.strftime("%Y.%m.%d %H:%M:%S")# name of .wav file
-        return wav_output_filename, now
+        return wav_output_filename , now
 
     def deleteRecords(self,now, path, DAY, HOUR):
         if now.day == DAY and now.hour == HOUR:
@@ -93,13 +93,11 @@ class audioRecording():
                 else:
                     pass
             for folder in os.listdir(logpath): 
-                if newest(logpath) != (logpath+folder):
-                    try: 
-                        shutil.rmtree(logpath+folder)
-                    except Exception as e:
-                        print(e)
-                else:
-                    pass
+                try: 
+                    shutil.rmtree(logpath+folder)
+                except Exception as e:
+                    print(e)
+
 
     def deleteOneRecord(self, path):
         folderSize = 0     
@@ -114,8 +112,12 @@ class audioRecording():
         print("Folder size: " + str(folderSize) +"bytes" + " " + str((folderSize*0.000931)/1000000) + "Gb" )
         folderSizeGb = (folderSize*0.000931)/1000000
         if folderSizeGb >= 10:
-            os.remove(oldest(path))
-            print(oldest(path) + " "+ "removed")
+            oldestrecord = oldest(path)
+            oldestname = os.path.basename(oldestrecord).rsplit(".", 1)
+            print(oldestrecord + " "+ "removed" + " "+ oldestname)
+            os.remove(oldestrecord)
+            cursor.execute("DELETE FROM records WHERE name=?", (oldestname,))
+            con.commit()
         else:
             pass
 
@@ -152,8 +154,8 @@ chans = 2 # 1 channel
 samp_rate = 44100 # 44.1kHz sampling rate
 chunk = 4096 # 2^12 samples for buffer
 SecondsPerChannel = 8 
-DAY = 1
-HOUR = 1
+DAY = 9
+HOUR = 14
 
 
 #adjusting time
@@ -168,7 +170,7 @@ NumberOfChannels = dbProcess.getNumberOfFrequencies()
 record_secs = SecondsPerChannel * NumberOfChannels   # seconds to record
 
 wav_output_filename, now = recordingProcess.getTime()
-recordingProcess.deleteOneRecord(path)
+recordingProcess.deleteRecords(now,path, DAY, HOUR)
 
 frames = recordingProcess.recordAudio(samp_rate,chunk,record_secs)
 
