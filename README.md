@@ -49,7 +49,7 @@ which python
 
 ### create environment with specific python
 ```
-virtualenv env --python=/usr/local/bin/python3.7.4
+virtualenv env --python=/usr/local/bin/python3.7  (can be seen in the directory)
 ```
 
 ### Installing pyaudio
