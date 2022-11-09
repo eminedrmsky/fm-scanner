@@ -3,7 +3,8 @@
  
  ### install python
  ```
- python3.6.8
+ python3.7.4
+ sudo apt-get update
  sudo apt-get install -y python3 git python3-pip
  sudo apt-get install python3-dev or  sudo apt-get install python3.9-dev  (version you have)
  ```
