@@ -3,13 +3,14 @@
  
  ### install python
  ```
- python3.6.8
+ python3.7.4
+ sudo apt-get update
  sudo apt-get install -y python3 git python3-pip
  sudo apt-get install python3-dev or  sudo apt-get install python3.9-dev  (version you have)
  ```
  ### create environment
  ```
- pip install virtualenv
+ sudo pip install virtualenv (if sudo do not used virtualenv command will not be recognized)
  virtualenv --version
  virtualenv env
  source env/bin/activate
@@ -48,7 +49,7 @@ which python
 
 ### create environment with specific python
 ```
-virtualenv env --python=/usr/local/bin/python3.7.4
+virtualenv env --python=/usr/local/bin/python3.7  (can be seen in the directory)
 ```
 
 ### Installing pyaudio
