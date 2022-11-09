@@ -43,7 +43,8 @@ try:
             logging.handlers.TimedRotatingFileHandler(logFilePath, when = 'M')
         ])
 
-except:
+except Exception as e:
+    print(e)
     serial_available = False
     print("Bağlantı Yok")
 
