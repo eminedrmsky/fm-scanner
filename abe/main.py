@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 #if __name__ == '__main__':
 try:
     #SERIAL
-    ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+    ser = serial.Serial('/dev/serial0', 9600, parity=serial.PARITY_NONE,
+     stopbits=serial.STOPBITS_ONE,
+     bytesize=serial.EIGHTBITS,timeout=1)
+
     ser.flush()
     serial_available = True
     print("Bağlantı Sağlandı")
