@@ -6,4 +6,6 @@ urlbase="http://192.168.1.28:8000"
 host = '0.0.0.0'
 port= 3000
 
+CSVfilePath = "/home/pi/fm-scanner/fm-scanner/"
 
+tunnelName = "testTuneli"

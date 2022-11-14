@@ -304,7 +304,7 @@ class DatabaseProcess():
     def add_value(self,date,freq,resp1,rssi,snr, info, temp, hum):
         conn = self.con
         crsr = self.cursor
-        crsr.execute("INSERT INTO soundData VALUES(?,?,?,?,?,?,?,?)",(date,freq,resp1,rssi,snr,info,temp,hum))
+        crsr.execute("INSERT INTO data VALUES(?,?,?,?,?,?,?,?)",(date,freq,resp1,rssi,snr,info,temp,hum))
         conn.commit()
 
     def get_all_data(self): #TÜM SESLERİ 30 SN ARALIKLA DİNLEMEK İÇİN

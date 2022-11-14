@@ -9,6 +9,7 @@ import os
 from datetime import *
 import sqlite3 
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -81,13 +82,13 @@ class SerialCommunication(object):
                 freq_index_module0 += 1
                 resp1, freq, rssi, snr = raspberryProccess.get_status_module0  
                 dbProccess.serial_available()
-                now = datetime.now()
                 print("Frequency: ", freq)
                 print("RESP1: ", resp1)
                 print("RSSI: ", rssi)
                 print("SNR: ", snr)
 
                 (temperature, humidity) = sht21.measure(1)  # I2C-1 Port
+                now = datetime.now()
                 print("Temperature: %s °C  Humidity: %s %%" % (temperature, humidity))
                 sleep(1)
                 dbProccess.update_temp(now, temperature, humidity)
@@ -98,13 +99,13 @@ class SerialCommunication(object):
                 if (snr == 0):
                     try:
                         dbProccess.update_data(freq,resp1,rssi,snr,"There is no sound!")
-                        dbProccess.add_value(now,freq,resp1,rssi,snr, "There is no sound!",0,0)  #convert zeros to temperature and humidity
+                        dbProccess.add_value(now,freq,resp1,rssi,snr, "There is no sound!",temperature,humidity)  #convert zeros to temperature and humidity
                     except Exception as e:
                         print(e)
                 else:
                     try:
                         dbProccess.update_data(freq,resp1,rssi,snr,"Sound is OK!")
-                        dbProccess.add_value(now,freq,resp1,rssi,snr,"Sound is OK!",0,0)   #convert zeros to temperature and humidity
+                        dbProccess.add_value(now,freq,resp1,rssi,snr,"Sound is OK!",temperature,humidity)   #convert zeros to temperature and humidity
                     except Exception as e:
                         print(e)
 

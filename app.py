@@ -11,6 +11,10 @@ import socket
 from datetime import datetime
 import csv
 import config
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils import get_column_letter
+import os
+from pytz import timezone
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -48,6 +52,33 @@ class ParameterSchema(ma.Schema):
 parameter_schema = ParameterSchema()
 parameters_schema = ParameterSchema(many = True)
 
+class data(db.Model):
+    date    = db.Column(db.Text, primary_key=True)
+    freq   = db.Column(db.Integer)
+    resp1 	= db.Column(db.Integer)
+    rssi 	= db.Column(db.Integer)
+    snr 	= db.Column(db.Integer)
+    info 	= db.Column(db.Text)
+    temp = db.Column(db.Integer)
+    hum = db.Column(db.Integer)
+
+    def __init__(self, freq, date, resp1, rssi, snr, info, temp, hum):
+        self.freq = freq
+        self.date = date
+        self.resp1 = resp1
+        self.rssi = rssi
+        self.snr = snr
+        self.info = info
+        self.temp = temp
+        self.hum = hum
+
+class dataSchema(ma.Schema):
+    class Meta:
+        fields = ('date','freq',  'resp1', 'rssi', 'snr', 'info', 'temp', 'hum')
+
+data_schema = dataSchema()
+data_schema = dataSchema(many = True)
+
 class medium(db.Model):
     date = db.Column(db.String(20), primary_key = True)
     temp = db.Column(db.Integer)
@@ -78,7 +109,60 @@ class RecordsSchema(ma.Schema):
 records_schema = RecordsSchema(many = True)
 record_schema = RecordsSchema()
 
-####################################################################################################################################
+########CSV MANAGE ############################################################################################################################
+
+CSVfilePath = config.CSVfilePath
+tunnelName = config.tunnelName
+
+def createCSVfile(path, now , tunnelName):
+    wb = Workbook()
+    ws = wb.active
+    fileName = now + "-"+ tunnelName
+    ws.title = "Tunnel Data"
+    return wb, ws, fileName
+
+def getTime():
+    turkey = timezone('Europe/Istanbul')
+    now = datetime.now(turkey)
+    fileNow =now.strftime("%Y.%m.%d-%H.%M.%S")# name of .wav file
+    return fileNow
+
+def deleteCSVfile(path):
+    for file in os.listdir(path):  
+        if (file.endswith('.xlsx')):
+            try:
+                os.remove(path+file)
+            except Exception as e:
+                print(e)
+        else:
+            pass
+
+class manageExcel():
+    def __init__(self, wb,ws, fileName):
+        self.wb = wb
+        self.ws = ws
+        self.fileName = fileName
+
+    def appendHeader(self):
+        wb = self.wb
+        ws = self.ws
+        fileName = self.fileName
+        ws.append(['Date', 'Frequency', 'Validness', 'Signal Power', 'SNR', 'Temperature', 'Humidity'])
+        wb.save(fileName +'.xlsx')
+
+    def appendData(self, CSVdata):
+        wb = self.wb
+        ws = self.ws
+        fileName = self.fileName
+        for data in CSVdata:
+            try:
+                ws.append([data.date, data.freq, data.resp1, data.rssi, data.snr, data.temp, data.hum])
+            except Exception as e:
+                print(e)
+        wb.save(fileName +'.xlsx')
+
+
+###########################################################################################################################################
 
 global CurrentChannel
 CurrentChannel = 0
@@ -225,19 +309,42 @@ def MainPage():
 
 @app.route('/records', methods=['GET', 'POST'])
 def showRecords():
+    deleteCSVfile(CSVfilePath)
+    fileNow = getTime()
+    wb, ws, fileName =createCSVfile(CSVfilePath, fileNow , tunnelName)
+    CSV = manageExcel(wb, ws, fileName)
+    CSV.appendHeader()
+    CSVdata = data.query.all()  
+    CSV.appendData(CSVdata)
     hists = records.query.all()
     if request.method == 'POST':
+        deleteCSVfile(CSVfilePath)
+        fileNow = getTime()
+        wb, ws, fileName =createCSVfile(CSVfilePath, fileNow , tunnelName)
+        CSV = manageExcel(wb, ws, fileName)
+        CSV.appendHeader()
+        
+        filteredCSVdata =[]
         newHists =[]
         fromDatestr = request.form["from_Date"]
-        fromDate = datetime.strptime( fromDatestr, '%Y-%m-%d')
+        fromDate = datetime.strptime( fromDatestr , '%Y-%m-%d')
         toDatestr = request.form["to_Date"]
         toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
+
+        CSVdatafilter = data.query.all() 
+
+        for info in CSVdatafilter:
+            date = datetime.strptime(info.date, '%Y-%m-%d %H:%M:%S.%f')
+            if date >= fromDate and date <= toDate:
+                filteredCSVdata.append(info)
+
+        CSV.appendData(filteredCSVdata)
         for hist in hists:
             date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
             if date >= fromDate and date <= toDate:
                 newHists.append(hist)
-        return  render_template('recordings.html', hists = newHists)   
-    return render_template('recordings.html', hists = hists)
+        return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx")   
+    return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
 
 #############################################################API END POINTS##########################################################################################
 
