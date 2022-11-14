@@ -124,7 +124,7 @@ def createCSVfile(path, now , tunnelName):
 def getTime():
     turkey = timezone('Europe/Istanbul')
     now = datetime.now(turkey)
-    fileNow =now.strftime("%Y.%m.%d-%H.%M.%S")# name of .wav file
+    fileNow =now.strftime("%Y.%m.%d-%H.%M.%S")
     return fileNow
 
 def deleteCSVfile(path):
@@ -340,7 +340,7 @@ def showRecords():
 
         CSV.appendData(filteredCSVdata)
         for hist in hists:
-            date = datetime.strptime(hist.name, '%Y.%m.%d %H:%M:%S')
+            date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
             if date >= fromDate and date <= toDate:
                 newHists.append(hist)
         return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx")   

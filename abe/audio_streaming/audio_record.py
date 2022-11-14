@@ -77,7 +77,7 @@ class audioRecording():
     def getTime(self):
         turkey = timezone('Europe/Istanbul')
         now = datetime.now(turkey)
-        wav_output_filename =now.strftime("%Y.%m.%d %H:%M:%S")# name of .wav file
+        wav_output_filename =now.strftime("%Y-%m-%d %H:%M:%S")# name of .wav file
         return wav_output_filename , now
 
     def deleteRecords(self,now, path, DAY, HOUR):
@@ -111,12 +111,12 @@ class audioRecording():
 
         print("Folder size: " + str(folderSize) +"bytes" + " " + str((folderSize*0.000931)/1000000) + "Gb" )
         folderSizeGb = (folderSize*0.000931)/1000000
-        if folderSizeGb >= 10:
+        if folderSizeGb >= 0:
             oldestrecord = oldest(path)
             oldestname = os.path.basename(oldestrecord).rsplit(".", 1)
-            print(oldestrecord + " "+ "removed" + " "+ oldestname)
+            print(oldestrecord + " "+ "removed" + " "+ oldestname[0])
             os.remove(oldestrecord)
-            cursor.execute("DELETE FROM records WHERE name=?", (oldestname,))
+            cursor.execute("DELETE FROM records WHERE name=?", (oldestname[0],))
             con.commit()
         else:
             pass
@@ -154,8 +154,8 @@ chans = 2 # 1 channel
 samp_rate = 44100 # 44.1kHz sampling rate
 chunk = 4096 # 2^12 samples for buffer
 SecondsPerChannel = 8 
-DAY = 9
-HOUR = 14
+DAY = 1
+HOUR = 1
 
 
 #adjusting time
@@ -170,7 +170,8 @@ NumberOfChannels = dbProcess.getNumberOfFrequencies()
 record_secs = SecondsPerChannel * NumberOfChannels   # seconds to record
 
 wav_output_filename, now = recordingProcess.getTime()
-recordingProcess.deleteRecords(now,path, DAY, HOUR)
+#recordingProcess.deleteRecords(now,path, DAY, HOUR)
+recordingProcess.deleteOneRecord(path)
 
 frames = recordingProcess.recordAudio(samp_rate,chunk,record_secs)
 
