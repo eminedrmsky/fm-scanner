@@ -247,8 +247,8 @@ def audio():
 @app.route("/", methods=['GET', 'POST'])
 def MainPage():
 
-    if False:  # Buraya error şartı gelecek, true ise error sayfasına gidecek
-        return render_template("errorpage.html")
+    # if False:  # Buraya error şartı gelecek, true ise error sayfasına gidecek
+    #     return render_template("errorpage.html")
 
     # flag kontrol yap, socketflagı renderın içine at
 

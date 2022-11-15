@@ -9,7 +9,7 @@ Frequency_Scan = main.SerialCommunication()
 sleep(10)
 
 Frequency_Scan.Module_0()
-schedule.every().hour.do(Frequency_Scan.Module_0)
+schedule.every(60).minutes.do(Frequency_Scan.Module_0)
 
 while True:
   
