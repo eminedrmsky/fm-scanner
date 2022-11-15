@@ -253,6 +253,7 @@ def MainPage():
     # flag kontrol yap, socketflagı renderın içine at
 
     global CurrentChannel
+    Frequency_Scan.Module_1_One_Frequency(0)
     items = status.query.all()
     mediums = medium.query.all()
     hists = records.query.all()
@@ -266,7 +267,7 @@ def MainPage():
                     CurrentChannel = 0
                 
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
-                Frequency_Scan.Module_0_One_Frequency(4)
+                # Frequency_Scan.Module_0_One_Frequency(4)
 
             elif task == 'prev':
                 if  CurrentChannel != 0:
@@ -318,32 +319,38 @@ def showRecords():
     CSV.appendData(CSVdata)
     hists = records.query.all()
     if request.method == 'POST':
-        deleteCSVfile(CSVfilePath)
-        fileNow = getTime()
-        wb, ws, fileName =createCSVfile(CSVfilePath, fileNow , tunnelName)
-        CSV = manageExcel(wb, ws, fileName)
-        CSV.appendHeader()
-        
-        filteredCSVdata =[]
-        newHists =[]
-        fromDatestr = request.form["from_Date"]
-        fromDate = datetime.strptime( fromDatestr , '%Y-%m-%d')
-        toDatestr = request.form["to_Date"]
-        toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
+        for task in request.form:
+            if task == 'Apply':
+                deleteCSVfile(CSVfilePath)
+                fileNow = getTime()
+                wb, ws, fileName =createCSVfile(CSVfilePath, fileNow , tunnelName)
+                CSV = manageExcel(wb, ws, fileName)
+                CSV.appendHeader()
+                
+                filteredCSVdata =[]
+                newHists =[]
+                fromDatestr = request.form["from_Date"]
+                fromDate = datetime.strptime( fromDatestr , '%Y-%m-%d')
+                toDatestr = request.form["to_Date"]
+                toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
 
-        CSVdatafilter = data.query.all() 
+                CSVdatafilter = data.query.all() 
 
-        for info in CSVdatafilter:
-            date = datetime.strptime(info.date, '%Y-%m-%d %H:%M:%S.%f')
-            if date >= fromDate and date <= toDate:
-                filteredCSVdata.append(info)
+                for info in CSVdatafilter:
+                    date = datetime.strptime(info.date, '%Y-%m-%d %H:%M:%S.%f')
+                    if date >= fromDate and date <= toDate:
+                        filteredCSVdata.append(info)
 
-        CSV.appendData(filteredCSVdata)
-        for hist in hists:
-            date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
-            if date >= fromDate and date <= toDate:
-                newHists.append(hist)
-        return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx")   
+                CSV.appendData(filteredCSVdata)
+                for hist in hists:
+                    date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
+                    if date >= fromDate and date <= toDate:
+                        newHists.append(hist)
+                return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx")   
+            
+            elif task == 'submit':
+                return render_template('recordings.html')
+
     return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
 
 #############################################################API END POINTS##########################################################################################

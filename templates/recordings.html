@@ -27,7 +27,9 @@
                                 href="{{ url_for('showRecords') }}">Reset</a>
                         </div>
                     </div>
-                <div class="col" style="margin-left: 350px;">  
+
+
+                <div class="col" style="margin-left: 100px;">  
                 <a href="/static/media/logo/csv.jpg" download="csv.jpg">          
                   <div class="hoverable2" >
                         <span class="hoverable2__main" style="margin-right: 25px;"></span>
@@ -39,9 +41,26 @@
                 </div>
                 <input class="btn btn-outline-dark" type="submit" id="Download" name="Download"
                 value="Download"  style="margin-left: 50px; ">
-              </input>
+                </input>
+                  </a> 
                 </div>
-            </a> 
+
+               <div class="row" style="margin-top: 90px;  margin-left: 100px;">  
+                    <form action="/records" method="post">
+                        <label for="cars">Scan Interval:</label>
+                        <select name="cars" id="cars">
+                          <option value="120">120 m</option>
+                          <option value="60">60 m</option>
+                          <option value="30">30 m</option>
+                          <option value="15">15 m</option>
+                        </select>
+                        <br><br>
+                        <input class="btn btn-outline-dark" type="submit" id="submit" name="submit" value="Submit" style="margin-left: 90px"> </input>
+                      </form>
+            </div> 
+                </div>
+
+            
             </div>
 
                 <table id = "recordings" class="table table-borderless table-responsive">
@@ -81,6 +100,7 @@
                     </tbody>
                 </table>
             </div>
+            
         </div>
     </div>
 </section>
