@@ -2,7 +2,6 @@ from flask import Flask, render_template, jsonify, request, Response
 from flask_restful import Api, Resource, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from dataclasses import dataclass
 import urllib.request, urllib.parse, json
 from abe import main
 from time import *
@@ -15,6 +14,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 import os
 from pytz import timezone
+from db_models import *
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -23,91 +23,11 @@ app.config["SECRET_KEY"] = "abefmscanner"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///abe/get_status.db'
 
-db = SQLAlchemy(app)
-ma = Marshmallow(app)
+db.app = app
+db.init_app(app)
 
 urlbase= config.urlbase
 
-#SQLAlchemy modelleri
-class status(db.Model):
-    freq    = db.Column(db.Integer, unique = True, primary_key=True)
-    kanal   = db.Column(db.Text)
-    resp1 	= db.Column(db.Integer)
-    rssi 	= db.Column(db.Integer)
-    snr 	= db.Column(db.Integer)
-    stat 	= db.Column(db.Text)
-
-    def __init__(self, freq, kanal, resp1, rssi, snr, stat):
-        self.freq = freq
-        self.kanal = kanal
-        self.resp1 = resp1
-        self.rssi = rssi
-        self.snr = snr
-        self.stat = stat
-
-class ParameterSchema(ma.Schema):
-    class Meta:
-        fields = ('freq', 'kanal', 'resp1', 'rssi', 'snr', 'stat')
-
-parameter_schema = ParameterSchema()
-parameters_schema = ParameterSchema(many = True)
-
-class data(db.Model):
-    date    = db.Column(db.Text, primary_key=True)
-    freq   = db.Column(db.Integer)
-    resp1 	= db.Column(db.Integer)
-    rssi 	= db.Column(db.Integer)
-    snr 	= db.Column(db.Integer)
-    info 	= db.Column(db.Text)
-    temp = db.Column(db.Integer)
-    hum = db.Column(db.Integer)
-
-    def __init__(self, freq, date, resp1, rssi, snr, info, temp, hum):
-        self.freq = freq
-        self.date = date
-        self.resp1 = resp1
-        self.rssi = rssi
-        self.snr = snr
-        self.info = info
-        self.temp = temp
-        self.hum = hum
-
-class dataSchema(ma.Schema):
-    class Meta:
-        fields = ('date','freq',  'resp1', 'rssi', 'snr', 'info', 'temp', 'hum')
-
-data_schema = dataSchema()
-data_schema = dataSchema(many = True)
-
-class medium(db.Model):
-    date = db.Column(db.String(20), primary_key = True)
-    temp = db.Column(db.Integer)
-    hum = db.Column(db.Integer)
-
-    
-    def __init__(self, date, temp, hum):
-        self.date = date
-        self.temp = temp
-        self.hum = hum
-
-class MediumSchema(ma.Schema):
-    class Meta:
-        fields = ('date', 'temp', 'hum')
-
-medium_schema = MediumSchema(many = True)
-
-@dataclass
-class records(db.Model):
-    name      = db.Column(db.Text, primary_key = True)
-    length    = db.Column(db.Integer)
-    info 	= db.Column(db.Text)
-
-class RecordsSchema(ma.Schema):
-    class Meta:
-        fields = ('name', 'length', 'info')
-
-records_schema = RecordsSchema(many = True)
-record_schema = RecordsSchema()
 
 ########CSV MANAGE ############################################################################################################################
 
@@ -173,40 +93,43 @@ def getFrequencies():
     response = urllib.request.urlopen(url)
     data =response.read()
     dict =json.loads(data)
-    print(dict)
     return dict
 
-def postFrequencyData():
-    data = { 'test1': 10, 'test2': 20 }
-    data = urllib.parse.urlencode(data).encode()
-    req =  urllib.request.Request( urlbase + "/frequencyData", data=data) # this will make the method "POST"
-    resp = urllib.request.urlopen(req)
-    print(resp.read())
+# def postFrequencyData():
+#     data = { 'test1': 10, 'test2': 20 }
+#     data = urllib.parse.urlencode(data).encode()
+#     req =  urllib.request.Request( urlbase + "/frequencyData", data=data) # this will make the method "POST"
+#     resp = urllib.request.urlopen(req)
+#     print(resp.read())
 
         
+def updateFrequencyList():
+    try:
+        frequencyData = getFrequencies() 
+        db.session.query(status).delete()
+        db.session.commit()
 
-# try:
-#     frequencyData = getFrequencies()  
-#     db.session.query(status).delete()
-#     db.session.commit()
+        for frequency in frequencyData:
+            if frequency['status'] == 1:
+                freq = frequency['freq']
+                kanal = frequency['name']
+                resp1 = 0
+                rssi = 0
+                snr = 0
+                stat = " "
+                new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
+                db.session.add(new_frequency)
+                db.session.commit()
+            else:
+                pass
 
-#     for frequency in frequencyData:
-#         freq = frequency['freq']
-#         kanal = frequency['kanal']
-#         resp1 = 0
-#         rssi = 0
-#         snr = 0
-#         stat = " "
-#         new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
-#         db.session.add(new_frequency)
-#         db.session.commit()
-
-# except Exception as e:
-#     print(e)
+    except Exception as e:
+        print(e)
 
 
 # SocketFlag = False ###https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
 
+updateFrequencyList()
 
 @app.route('/audio', methods =['GET', 'POST'])
 def audio():
@@ -246,14 +169,10 @@ def audio():
 
 @app.route("/", methods=['GET', 'POST'])
 def MainPage():
-
     # if False:  # Buraya error şartı gelecek, true ise error sayfasına gidecek
     #     return render_template("errorpage.html")
-
-    # flag kontrol yap, socketflagı renderın içine at
-
     global CurrentChannel
-    Frequency_Scan.Module_1_One_Frequency(0)
+    Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
     items = status.query.all()
     mediums = medium.query.all()
     hists = records.query.all()
@@ -267,7 +186,6 @@ def MainPage():
                     CurrentChannel = 0
                 
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
-                # Frequency_Scan.Module_0_One_Frequency(4)
 
             elif task == 'prev':
                 if  CurrentChannel != 0:
@@ -279,24 +197,7 @@ def MainPage():
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
 
             elif task == 'Kanal Listesini Güncelle':
-                try:
-                    frequencyData = getFrequencies()  
-                    db.session.query(status).delete()
-                    db.session.commit()
-
-                    for frequency in frequencyData:
-                        freq = frequency['freq']
-                        kanal = frequency['kanal']
-                        resp1 = 0
-                        rssi = 0
-                        snr = 0
-                        stat = " "
-                        new_frequency = status(freq, kanal, resp1, rssi, snr, stat)
-                        db.session.add(new_frequency)
-                        db.session.commit()
-
-                except Exception as e:
-                    print(e)
+                updateFrequencyList()
             else:
                 ClickedChannel = int(request.form["kanalFrekansı"])
                 for t in text:
