@@ -86,3 +86,14 @@ class RecordsSchema(ma.Schema):
 
 records_schema = RecordsSchema(many = True)
 record_schema = RecordsSchema()
+
+class dinleme(db.Model):
+    var = db.Column(db.String(20), primary_key = True)
+    stat = db.Column(db.Integer)
+    
+   
+    def __init__(self, var, stat):
+        self.var = var
+        self.stat = stat
+       
+

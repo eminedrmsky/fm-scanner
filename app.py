@@ -7,14 +7,11 @@ from abe import main
 from time import *
 import numpy as np
 import socket
-from datetime import datetime
-import csv
 import config
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import get_column_letter
 import os
-from pytz import timezone
 from db_models import *
+import manageCSV
+from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
 api = Api(app)
@@ -28,58 +25,8 @@ db.init_app(app)
 
 urlbase= config.urlbase
 
-
-########CSV MANAGE ############################################################################################################################
-
 CSVfilePath = config.CSVfilePath
 tunnelName = config.tunnelName
-
-def createCSVfile(path, now , tunnelName):
-    wb = Workbook()
-    ws = wb.active
-    fileName = now + "-"+ tunnelName
-    ws.title = "Tunnel Data"
-    return wb, ws, fileName
-
-def getTime():
-    turkey = timezone('Europe/Istanbul')
-    now = datetime.now(turkey)
-    fileNow =now.strftime("%Y.%m.%d-%H.%M.%S")
-    return fileNow
-
-def deleteCSVfile(path):
-    for file in os.listdir(path):  
-        if (file.endswith('.xlsx')):
-            try:
-                os.remove(path+file)
-            except Exception as e:
-                print(e)
-        else:
-            pass
-
-class manageExcel():
-    def __init__(self, wb,ws, fileName):
-        self.wb = wb
-        self.ws = ws
-        self.fileName = fileName
-
-    def appendHeader(self):
-        wb = self.wb
-        ws = self.ws
-        fileName = self.fileName
-        ws.append(['Date', 'Frequency', 'Validness', 'Signal Power', 'SNR', 'Temperature', 'Humidity'])
-        wb.save(fileName +'.xlsx')
-
-    def appendData(self, CSVdata):
-        wb = self.wb
-        ws = self.ws
-        fileName = self.fileName
-        for data in CSVdata:
-            try:
-                ws.append([data.date, data.freq, data.resp1, data.rssi, data.snr, data.temp, data.hum])
-            except Exception as e:
-                print(e)
-        wb.save(fileName +'.xlsx')
 
 
 ###########################################################################################################################################
@@ -211,23 +158,16 @@ def MainPage():
 
 @app.route('/records', methods=['GET', 'POST'])
 def showRecords():
-    deleteCSVfile(CSVfilePath)
-    fileNow = getTime()
-    wb, ws, fileName =createCSVfile(CSVfilePath, fileNow , tunnelName)
-    CSV = manageExcel(wb, ws, fileName)
-    CSV.appendHeader()
-    CSVdata = data.query.all()  
-    CSV.appendData(CSVdata)
+    wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, tunnelName)
+    CSVdata = data.query.all() 
+    manageCSV.addDataHeader(wb,ws, fileName, CSVdata) 
     hists = records.query.all()
     if request.method == 'POST':
         for task in request.form:
-            if task == 'Apply':
-                deleteCSVfile(CSVfilePath)
-                fileNow = getTime()
-                wb, ws, fileName =createCSVfile(CSVfilePath, fileNow , tunnelName)
-                CSV = manageExcel(wb, ws, fileName)
-                CSV.appendHeader()
-                
+            if task == 'set':  
+                return render_template('recordings.html')
+            else:
+                wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, tunnelName)              
                 filteredCSVdata =[]
                 newHists =[]
                 fromDatestr = request.form["from_Date"]
@@ -242,15 +182,13 @@ def showRecords():
                     if date >= fromDate and date <= toDate:
                         filteredCSVdata.append(info)
 
-                CSV.appendData(filteredCSVdata)
+                manageCSV.addDataHeader(wb,ws, fileName, filteredCSVdata)
                 for hist in hists:
                     date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
                     if date >= fromDate and date <= toDate:
                         newHists.append(hist)
-                return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx")   
-            
-            elif task == 'submit':
-                return render_template('recordings.html')
+
+                return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx") 
 
     return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
 
@@ -332,17 +270,7 @@ class temperatureAndHumidity(Resource):
         return jsonify(result)
     
     def post(self):
-        date = request.json['date']
-        temp = request.json['temp']
-        hum = request.json['hum']
-
-        new_medium = status(date,temp,hum)
-
-        db.session.add(new_medium)
-        db.session.commit()
-
-        return medium_schema.jsonify(new_medium)
-
+        return{}
 
     def put(self):
         return{}
