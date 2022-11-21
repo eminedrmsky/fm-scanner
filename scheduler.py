@@ -17,7 +17,7 @@ def get_interval(con,cursor): #databaseden dinleme komutu almak için
 interval = get_interval(con,cursor)
 print(interval)
 
-sleep(10)
+sleep(8)
 
 schedule.every(interval).minutes.do(Frequency_Scan.Module_0)
 

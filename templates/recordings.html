@@ -7,7 +7,7 @@
             <div class="row justify-content-md-center">
                 <div class="d-flex flex-row w-75 mx-auto">
                     <div class="col">
-                    <form action="#" method="post">
+                    <form action="#" method="post" id="filter_form">
                         <div class="row" >
                             <div class='row' style="margin-left: 19px;"> From:</div>
                                 <input type="date" name="from_Date"  style="margin-left: 30px; font-size: 20px; width:400px; " 
@@ -30,7 +30,7 @@
 
 
                 <div class="col" style="margin-left: 100px;">  
-                <a href="/static/media/logo/csv.jpg" download="csv.jpg">          
+                <a href="/static/testTuneli.xlsx" download="csv.xlsx">          
                   <div class="hoverable2" >
                         <span class="hoverable2__main" style="margin-right: 25px;"></span>
                             <img src="/static/media/logo/csv.jpg" alt="" width="150" height="150">
@@ -46,16 +46,19 @@
                 </div>
 
                <div class="row" style="margin-top: 90px;  margin-left: 100px;">  
-                    <form action="/records" method="post">
-                        <label for="cars">Scan Interval:</label>
-                        <select name="cars" id="cars">
-                          <option value="120">120 m</option>
-                          <option value="60">60 m</option>
-                          <option value="30">30 m</option>
-                          <option value="15">15 m</option>
+                    <form action="#" method="post" id="interval_form">
+                        <label for="interval">Scan Interval:</label>
+                        <select name="interval" id="interval">
+                          <option value="60">60</option>
+                          <option value="30">30</option>
+                          <option value="15">15</option>
+                          
                         </select>
                         <br><br>
-                        <input class="btn btn-outline-dark" type="submit" id="set" name="set" value="set" style="margin-left: 90px"> </input>
+                        <button class="btn btn-outline-dark" type="submit" id="set" name="set"
+                                value="set" onclick = "showLoader()">set
+                        </button>
+                        
                       </form>
             </div> 
                 </div>
@@ -210,6 +213,7 @@
             const csvdata = csvmaker(data);          
             download(csvdata);
         }
+
 
     
 </script>

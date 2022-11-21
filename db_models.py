@@ -30,6 +30,7 @@ class ParameterSchema(ma.Schema):
 parameter_schema = ParameterSchema()
 parameters_schema = ParameterSchema(many = True)
 
+#data schema
 class data(db.Model):
     date    = db.Column(db.Text, primary_key=True)
     freq   = db.Column(db.Integer)
@@ -55,8 +56,10 @@ class dataSchema(ma.Schema):
         fields = ('date','freq',  'resp1', 'rssi', 'snr', 'info', 'temp', 'hum')
 
 data_schema = dataSchema()
-data_schema = dataSchema(many = True)
+datas_schema = dataSchema(many = True)
 
+
+#mediums schema
 class medium(db.Model):
     date = db.Column(db.String(20), primary_key = True)
     temp = db.Column(db.Integer)
@@ -74,6 +77,8 @@ class MediumSchema(ma.Schema):
 
 medium_schema = MediumSchema(many = True)
 
+
+#recods tablosu
 @dataclass
 class records(db.Model):
     name      = db.Column(db.Text, primary_key = True)
@@ -87,6 +92,8 @@ class RecordsSchema(ma.Schema):
 records_schema = RecordsSchema(many = True)
 record_schema = RecordsSchema()
 
+
+#dinleme tablosu
 class dinleme(db.Model):
     var = db.Column(db.String(20), primary_key = True)
     stat = db.Column(db.Integer)
@@ -95,5 +102,24 @@ class dinleme(db.Model):
     def __init__(self, var, stat):
         self.var = var
         self.stat = stat
+
+
+#Power table
+
+class power(db.Model):
+    date    = db.Column(db.String(20), primary_key = True)
+    info 	= db.Column(db.Text)
+
+    def __init__(self, date, info):
+        self.date = date
+        self.info = info
+        
+
+class PowerSchema(ma.Schema):
+    class Meta:
+        fields = ('date',  'info')
+
+powers_schema = PowerSchema(many = True)
+power_schema = PowerSchema()
        
 

@@ -111,7 +111,7 @@ class audioRecording():
 
         print("Folder size: " + str(folderSize) +"bytes" + " " + str((folderSize*0.000931)/1000000) + "Gb" )
         folderSizeGb = (folderSize*0.000931)/1000000
-        if folderSizeGb >= 0:
+        if folderSizeGb >= 10:
             oldestrecord = oldest(path)
             oldestname = os.path.basename(oldestrecord).rsplit(".", 1)
             print(oldestrecord + " "+ "removed" + " "+ oldestname[0])

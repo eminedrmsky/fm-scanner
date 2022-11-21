@@ -4,13 +4,21 @@ import csv
 from datetime import datetime
 import os
 from pytz import timezone
+import shutil
+
+
+def copyFile(pathOriginal, pathTarget, fileName):
+    original = pathOriginal + fileName + ".xlsx"
+    target = pathTarget +  fileName + ".xlsx"
+    shutil.copyfile(original, target)
+    return 0
 
 
 def createCSVfile(path, now , tunnelName):
     wb = Workbook()
     ws = wb.active
-    fileName = now + "-"+ tunnelName
-    ws.title = "Tunnel Data"
+    fileName = tunnelName
+    ws.title = now +  "-"+ tunnelName
     return wb, ws, fileName
 
 def getTime():
@@ -19,7 +27,7 @@ def getTime():
     fileNow =now.strftime("%Y.%m.%d-%H.%M.%S")
     return fileNow
 
-def deleteCSVfile(path):
+def deleteCSVfile(path , pathTarget):
     for file in os.listdir(path):  
         if (file.endswith('.xlsx')):
             try:
@@ -28,6 +36,16 @@ def deleteCSVfile(path):
                 print(e)
         else:
             pass
+
+    for file in os.listdir(pathTarget):  
+        if (file.endswith('.xlsx')):
+            try:
+                os.remove(pathTarget+file)
+            except Exception as e:
+                print(e)
+        else:
+            pass
+    
 
 class manageExcel():
     def __init__(self, wb,ws, fileName):
@@ -54,8 +72,8 @@ class manageExcel():
         wb.save(fileName +'.xlsx')
 
 
-def createDeleteCSV(path, tunnelName):
-    deleteCSVfile(path)
+def createDeleteCSV(path, pathTarget, tunnelName):
+    deleteCSVfile(path, pathTarget)
     fileNow = getTime()
     wb, ws, fileName =createCSVfile(path, fileNow , tunnelName)
     return wb,ws, fileName

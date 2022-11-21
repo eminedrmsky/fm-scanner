@@ -27,6 +27,7 @@ urlbase= config.urlbase
 
 CSVfilePath = config.CSVfilePath
 tunnelName = config.tunnelName
+pathTarget = config.pathTarget
 
 
 ###########################################################################################################################################
@@ -34,6 +35,7 @@ tunnelName = config.tunnelName
 global CurrentChannel
 CurrentChannel = 0
 Frequency_Scan = main.SerialCommunication()
+
 
 def getFrequencies():
     url= urlbase + "/frequencyData"
@@ -158,21 +160,26 @@ def MainPage():
 
 @app.route('/records', methods=['GET', 'POST'])
 def showRecords():
-    wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, tunnelName)
+    wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath,pathTarget, tunnelName)
     CSVdata = data.query.all() 
     manageCSV.addDataHeader(wb,ws, fileName, CSVdata) 
+    manageCSV.copyFile(CSVfilePath, pathTarget, fileName)
     hists = records.query.all()
     if request.method == 'POST':
         for task in request.form:
-            if task == 'set':  
-                return render_template('recordings.html')
+            if task == 'interval':  
+                interval = request.form.get("interval")
+                db.session.query(dinleme).filter(dinleme.var == 'interval').update({'stat': interval})
+                db.session.commit()
+                os.system("sudo systemctl restart fmStartRecording.service") # for recordings
+                return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
             else:
                 wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, tunnelName)              
                 filteredCSVdata =[]
                 newHists =[]
-                fromDatestr = request.form["from_Date"]
+                fromDatestr = request.form.get("from_Date")
                 fromDate = datetime.strptime( fromDatestr , '%Y-%m-%d')
-                toDatestr = request.form["to_Date"]
+                toDatestr = request.form.get("to_Date")
                 toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
 
                 CSVdatafilter = data.query.all() 
@@ -188,9 +195,9 @@ def showRecords():
                     if date >= fromDate and date <= toDate:
                         newHists.append(hist)
 
-                return  render_template('recordings.html', hists = newHists,  CSVfileName =CSVfilePath + fileName + ".xlsx") 
+                return  render_template('recordings.html', hists = newHists,  CSVfileName ="/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx") 
 
-    return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
+    return render_template('recordings.html', hists = hists, CSVfileName = "/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx")
 
 #############################################################API END POINTS##########################################################################################
 
@@ -278,17 +285,20 @@ class temperatureAndHumidity(Resource):
     def delete(self):
         return {}
 
-class isThereSound(Resource):
+class powerCut(Resource):
     def get(self):
+        parameters = power.query.all()
+        result = powers_schema.dump(parameters)
+        return jsonify(result)
+    
+    def post(self):
         return{}
 
-class isThereConnection(Resource):
-    def get(self):
+    def put(self):
         return{}
 
-class searchChannel(Resource):
-    def get(self):
-        return{}
+    def delete(self):
+        return {}
 
 #class for manipulating only one channel entry and its parameters#######################
 class Records(Resource):
@@ -312,9 +322,7 @@ class delete_record(Resource):
 api.add_resource(Frequency, "/frequency/<int:frequency>")
 api.add_resource(allFrequencies, "/parameters")
 api.add_resource(temperatureAndHumidity, "/tempAndHum")
-api.add_resource(isThereSound, "/sound")
-api.add_resource(isThereConnection, "/connection")
-api.add_resource(searchChannel, "/search")
+api.add_resource(powerCut, "/power")
 api.add_resource(Records, "/records")
 api.add_resource(delete_record, "/records/<string:record>")
 

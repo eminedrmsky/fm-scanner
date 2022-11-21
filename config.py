@@ -7,5 +7,6 @@ host = '0.0.0.0'
 port= 3000
 
 CSVfilePath = "/home/pi/fm-scanner/fm-scanner/"
+pathTarget = "/home/pi/fm-scanner/fm-scanner/static/"
 
-tunnelName = "testTuneli"
+tunnelName = "testTuneli"   #değişmesi halinde recordings.html satır 33 de değişecek
