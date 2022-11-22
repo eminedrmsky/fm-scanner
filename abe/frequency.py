@@ -69,15 +69,11 @@ class BaseFrequencyProccess(object):
                     
                     return resp1, freq, rssi, snr, 
                 else:
-                    pass
-                    #logger.error("answer gelmiyor")
-                    #flag
+                    logger.warning(f"{now} - There is no answer from the modules!")
+                    return 0,0,0,0
+
         else:
-            pass
-            #logger.error("Modülden ack gelmiyor")
-            #flag
-            
-              
-        return 0, 0, 0, 0
+            logger.warning(f"{now} - There is no ACK coming from the modules")           
+            return 0, 0, 0, 0
 
     

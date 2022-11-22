@@ -71,9 +71,12 @@ def updateFrequencyList():
                 db.session.commit()
             else:
                 pass
+        print("updated")
+        
 
     except Exception as e:
         print(e)
+        
 
 
 # SocketFlag = False ###https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
@@ -174,7 +177,7 @@ def showRecords():
                 os.system("sudo systemctl restart fmStartRecording.service") # for recordings
                 return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
             else:
-                wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, tunnelName)              
+                wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, pathTarget, tunnelName)              
                 filteredCSVdata =[]
                 newHists =[]
                 fromDatestr = request.form.get("from_Date")
@@ -194,6 +197,8 @@ def showRecords():
                     date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
                     if date >= fromDate and date <= toDate:
                         newHists.append(hist)
+                
+                manageCSV.copyFile(CSVfilePath, pathTarget, fileName)
 
                 return  render_template('recordings.html', hists = newHists,  CSVfileName ="/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx") 
 
@@ -300,31 +305,18 @@ class powerCut(Resource):
     def delete(self):
         return {}
 
-#class for manipulating only one channel entry and its parameters#######################
-class Records(Resource):
-#gets data of all records
-    def get(self):
-        all_records = records.query.all()
-        result = records_schema.dump(all_records)
-        return jsonify(result)
+class updateFreqList(Resource):
+    def post(self):
+        return {}
 
-#deletes chosen record from database
-class delete_record(Resource):
-    def delete(self, record):
-        Record_info = records.query.get(record)
-        db.session.delete(Record_info)
-        db.session.commit()
-        return record_schema.jsonify(Record_info)
 
 ##########################Resources and routes ###############################################################################################################################
-
 
 api.add_resource(Frequency, "/frequency/<int:frequency>")
 api.add_resource(allFrequencies, "/parameters")
 api.add_resource(temperatureAndHumidity, "/tempAndHum")
 api.add_resource(powerCut, "/power")
-api.add_resource(Records, "/records")
-api.add_resource(delete_record, "/records/<string:record>")
+api.add_resource(updateFreqList, "/updateFrequencyList")
 
 if __name__ == '__main__':
     app.run( host=config.host, debug= True, threaded=True, port=config.port)

@@ -98,6 +98,15 @@ class audioRecording():
                 except Exception as e:
                     print(e)
 
+    def deleteLogs(self,now,logpath,DAY,HOUR):
+        if now.day == DAY and now.hour == HOUR:
+            for folder in os.listdir(logpath): 
+                try: 
+                    shutil.rmtree(logpath+folder)
+                except Exception as e:
+                    print(e)
+
+
 
     def deleteOneRecord(self, path):
         folderSize = 0     
@@ -172,6 +181,7 @@ record_secs = SecondsPerChannel * NumberOfChannels   # seconds to record
 wav_output_filename, now = recordingProcess.getTime()
 #recordingProcess.deleteRecords(now,path, DAY, HOUR)
 recordingProcess.deleteOneRecord(path)
+recordingProcess.deleteLogs(now,logpath,DAY,HOUR)
 
 frames = recordingProcess.recordAudio(samp_rate,chunk,record_secs)
 

@@ -18,7 +18,6 @@ interval = get_interval(con,cursor)
 print(interval)
 
 sleep(10)
-
 schedule.every(interval).minutes.do(Frequency_Scan.Module_0)
 
 while True:

@@ -79,8 +79,15 @@ class SerialCommunication(object):
                 dbProccess.serial_bussy()
                 raspberryProccess.set_frequency_module0 = freq_index_module0
                 sleep(2)
-                freq_index_module0 += 1
                 resp1, freq, rssi, snr = raspberryProccess.get_status_module0  
+
+                if freq != 0:
+                    freq_index_module0 += 1
+                else:
+                    dbProccess.end_recording()  
+                    dbProccess.serial_available()         
+                    break
+
                 dbProccess.serial_available()
                 print("Frequency: ", freq)
                 print("RESP1: ", resp1)
@@ -139,8 +146,14 @@ class SerialCommunication(object):
                 dbProccess.serial_bussy()
                 raspberryProccess.set_frequency_module1 = freq_index_module1
                 sleep(1)
-                freq_index_module1 += 1
                 resp1, freq, rssi, snr= raspberryProccess.get_status_module1
+                if freq != 0:
+                    freq_index_module1 += 1
+                else:
+                    dbProccess.end_recording() 
+                    dbProccess.serial_available()         
+                    break
+
                 dbProccess.serial_available()
                 now = datetime.now()
                 print("Frequency: ", freq)
