@@ -18,13 +18,14 @@
                         </div>
                         
                         <div class="row" >
-                            <button type="submit" value="Apply" id="Apply" name="'Apply" style=" width:90px; 
+                            <button type="submit" value="Apply" id="Apply" name="Apply" style=" width:90px; 
                                 height:45px; margin-left: 40px; margin-bottom: 30px; margin-top: 10px;"
-                                class="btn btn-outline-dark">Apply </button>
+                                class="btn btn-outline-dark" onclick="this.form.submit()">Apply </button>
                         </form>
-                            <a class="btn btn-outline-dark" style=" width:90px; 
+
+                        <button type="submit" value="reset" id="reset" name="reset"class="btn btn-outline-dark" style=" width:90px; 
                                         height:45px;margin-left: 10px; margin-bottom: 30px; margin-top: 10px;"
-                                href="{{ url_for('showRecords') }}">Reset</a>
+                                href="{{ url_for('showRecords') }}" onclick="this.form.submit()">Reset</button>
                         </div>
                     </div>
 
@@ -39,65 +40,98 @@
                             Download data recorded between chosen dates as CSV file <br>
                         </span>
                 </div>
-                <input class="btn btn-outline-dark" type="submit" id="Download" name="Download"
-                value="Download"  style="margin-left: 50px; ">
-                </input>
+                <button class="btn btn-outline-dark" type="submit" id="Download" name="Download"
+                value="Download"  style="margin-left: 50px; " onclick="this.form.submit()">Download
+            </button>
                   </a> 
                 </div>
 
-               <div class="row" style="margin-top: 90px;  margin-left: 100px;">  
+               <div class="row" style="margin-top: 30px;  margin-left: 75px;">  
+
+                <p class=" d-flex flex-row p-2 m-2 justify-content-center" style='color: grey;'>
+                    Scan interval is {{modul0Interval}} min
+                </p>
                     <form action="#" method="post" id="interval_form">
                         <label for="interval">Scan Interval:</label>
                         <select name="interval" id="interval">
+                          <option selected disabled hidden>Choose</option>
+                          <option value="30">120</option>
+                          <option value="30">90</option>
                           <option value="60">60</option>
+                          <option value="30">45</option>
                           <option value="30">30</option>
                           <option value="15">15</option>
                           
                         </select>
                         <br><br>
                         <button class="btn btn-outline-dark" type="submit" id="set" name="set"
-                                value="set" onclick = "showLoader()">set
+                                value="set" onclick="this.form.submit()" style=" margin-left: 75px;">set interval
                         </button>
                         
                       </form>
             </div> 
                 </div>
 
+                {% if ismodule0Working == 1  %}
+                <script>
+                        document.getElementById("set").disabled = true;
+                        document.getElementById("interval").disabled = true;
+                    </script>
+                {%endif%}
             
             </div>
+
+        <form method="POST" id="page-form">
+            <div class="btn-group-horizontal" role="group" style=" margin-left: 50px;">
+                <p  style='color: grey;'>
+                    Pages: 
+                </p>
+                {% for page in range(pagenumber) %}
+                <input type="radio" class="btn-check" name="recordpage" autocomplete="off" id="{{page}}"
+                       value="{{ page }}" onclick="this.form.submit()">
+                <label class="btn btn-outline-dark" for="{{ page }}">
+                    {{ page }} 
+                </label>
+                {% endfor %}
+            </div>
+        </form>
 
                 <table id = "recordings" class="table table-borderless table-responsive">
                     <thead>
                     <tr class="border-bottom text-center">
+                        <th scope="col">#</th>
                         <th scope="col">Name </th>
                         <th scope="col">Recording</th>
-                        <th scope="col">Length</th>
                         <th scope="col">Information</th>
                     </tr>
                     </thead>
+                    {% set counter = 0 %}
                     <tbody>
-                    {% for hist in hists %}
-                    <tr class="border-bottom text-center">
-                        <td>{{hist.name}}</td>
-                        {% set file_name = hist.name +'.wav' %}
+
+                    {% for record in range(startrecord, lastrecord) %}
+                    <tr id = "hist-row-{{ loop.index }}" class="border-bottom text-center">
+                        <th scope="row"> {{ loop.index + startrecord}} </th>
+                        <td>{{hists[record].name}}</td>
+                        {% set file_name = hists[record].name +'.wav' %}
                         <td>
                             <audio controls>
                                 <source src="{{ url_for( 'static' , filename= file_name ) }}" type="audio/wav">
                             </audio>
                         </td>
-                        {% set second = hist.length%60 %}
-                        {% set minute = (hist.length-second)/60 %}
-                        <td>{{minute}} dk {{second}} sn</td>
                         <td class="hoverable">
                             
                             <span class="hoverable__main">
                                 data is here
                             </span>
                             <span class="hoverable__tooltip">
-                                {{hist.info}} 
+                                {{hists[record].info}} 
                             </span>
 
                         </td>
+                        <td>                              
+                        <a href="#"><img alt="Delete" title="Delete" style="margin: 2px;" src="/static/media/logo/trash.png" height="24" width="24" onclick="deleteRecording({{ loop.index }});"></a>
+                        <a href="#"><img alt="Download" title="Download" style="margin: 2px;" src="/static/media/logo/download.png" height="24" width="24" onclick="deleteRecording({{ loop.index }});"></a>
+                    </td>
                     </tr>
                     {%endfor%}
                     </tbody>
@@ -161,59 +195,29 @@
 
 <script>
     
-        const download = function (data) {
-        
-            // Creating a Blob for having a csv file format
-            // and passing the data with type
-            const blob = new Blob([data], { type: 'text/csv' });
+        $('form').submit(function () {
+        document.body.style.cursor='wait'
+        var form1 = $('#interval_form');
+        console.log(form1);
+        form1.find('input[type="submit"], button[type="submit"], input[type="radio"]').each(function (index) {
+            // Create a disabled clone of the submit button
+            $(this).clone(false).removeAttr('id').prop('disabled', true).insertBefore($(this));
 
-            // Creating an object for downloading url
-            const url = window.URL.createObjectURL(blob)
+            // Hide the actual submit button and move it to the beginning of the form
+            $(this).hide();
+            form1.prepend($(this));
+        });
+        var form2 = $('#filter_form');
+        console.log(form2);
+        form2.find('input[type="submit"], button[type="submit"], input[type="radio"]').each(function (index) {
+            // Create a disabled clone of the submit button
+            $(this).clone(false).removeAttr('id').prop('disabled', true).insertBefore($(this));
 
-            // Creating an anchor(a) tag of HTML
-            const a = document.createElement('a')
-
-            // Passing the blob downloading url
-            a.setAttribute('href', url)
-
-            // Setting the anchor tag attribute for downloading
-            // and passing the download file name
-            a.setAttribute('download', 'download.csv');
-
-            // Performing a download with click
-            a.click()
-        }
-
-        const csvmaker = function (data) {
-
-            // Empty array for storing the values
-            csvRows = [];
-
-            // Headers is basically a keys of an
-            // object which is id, name, and
-            // profession
-             const headers = ['name', 'length', 'info'];
-
-            // As for making csv format, headers
-            // must be separated by comma and
-            // pushing it into array
-             csvRows.push(headers);
-
-            // Pushing Object values into array
-            // with comma separation
-            const values = Object.values(data).join(',');
-            csvRows.push(values)
-
-            // Returning the array joining with new line
-            return csvRows.join('\n')
-        }
-
-        const get = async function () {
-            var data = '{{hists}}'
-            const csvdata = csvmaker(data);          
-            download(csvdata);
-        }
-
+            // Hide the actual submit button and move it to the beginning of the form
+            $(this).hide();
+            form2.prepend($(this));
+        });
+        });
 
     
 </script>

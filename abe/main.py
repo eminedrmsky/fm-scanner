@@ -79,15 +79,8 @@ class SerialCommunication(object):
                 dbProccess.serial_bussy()
                 raspberryProccess.set_frequency_module0 = freq_index_module0
                 sleep(2)
+                freq_index_module0 += 1
                 resp1, freq, rssi, snr = raspberryProccess.get_status_module0  
-
-                if freq != 0:
-                    freq_index_module0 += 1
-                else:
-                    dbProccess.end_recording()  
-                    dbProccess.serial_available()         
-                    break
-
                 dbProccess.serial_available()
                 print("Frequency: ", freq)
                 print("RESP1: ", resp1)
@@ -146,14 +139,8 @@ class SerialCommunication(object):
                 dbProccess.serial_bussy()
                 raspberryProccess.set_frequency_module1 = freq_index_module1
                 sleep(1)
+                freq_index_module1 += 1
                 resp1, freq, rssi, snr= raspberryProccess.get_status_module1
-                if freq != 0:
-                    freq_index_module1 += 1
-                else:
-                    dbProccess.end_recording() 
-                    dbProccess.serial_available()         
-                    break
-
                 dbProccess.serial_available()
                 now = datetime.now()
                 print("Frequency: ", freq)
@@ -182,11 +169,9 @@ class SerialCommunication(object):
         con = sqlite3.connect("/home/pi/fm-scanner/fm-scanner/abe/get_status.db") 
         cursor = con.cursor()
         raspberryProccess = business.RaspberryPiProccess(ser, serial_available)
-
         #DB
         dbProccess = support.DatabaseProcess(con, cursor)
         dbProccess.create_table()
-        sleep(1)
         print("ikinci kısma girdi")
         if dbProccess.get_data_serial() == 0:
             dbProccess.serial_bussy()
@@ -195,23 +180,10 @@ class SerialCommunication(object):
             sleep(1)
             resp1, freq, rssi, snr = raspberryProccess.get_status_module1
             dbProccess.serial_available()
-            now = datetime.now()
             print("Frequency: ", freq)
             print("RESP1: ", resp1)
             print("RSSI: ", rssi)
             print("SNR: ", snr)
-
-            if(snr == 0):
-                #Arayüz üzerinden bu frekansta ses olmadığını belirt.
-                logger.warning(f"{now} - {freq} => Bu frekansta ses yok!")
-                pass
-                    
-            else:
-                #Arayüz üzerinden bu frekansta ses olduğunu belirt.
-                logger.info(f"{now} - {freq} => Frekansındaki ses dinleniyor..")
-                pass
-
-            #TODO:Arayüzü oku. => db listen data 
             ser.flush()
         else:
             sleep(1)

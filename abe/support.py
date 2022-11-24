@@ -108,7 +108,7 @@ def debugPrint (str,message,**options):
         crc = message[8+length]
         print ("HEADER = {}\tID = {}\tADDR = {}\tTYPE = {}\tCOMMAND = {}\tLENGTH = {}\tCRC = {}\n\tMESSAGE = {}".format(header,id,addr,typ,command,length,crc,mesaj))
     else:
-        print()
+        print(message)
 
 
 def messageFooter (str): # adds crc and footer \r\n to message

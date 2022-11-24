@@ -79,11 +79,11 @@
             <ul class="navbar-nav me-auto mb-sm-0">
                 <li class="nav-item">
                     <a class="nav-link text-nowrap {% if request.path == '/' %} active {% endif %}"
-                       href="{{ url_for('MainPage') }}">Main Page</a>
+                       href="{{ url_for('MainPage') }}" onclick ="function(){document.body.style.cursor='wait'}">Main Page</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-nowrap {% if request.path == '/records' %} active {% endif %}"
-                       href="{{ url_for('showRecords') }}">Records</a>
+                       href="{{ url_for('showRecords') }}" onclick ="function(){document.body.style.cursor='wait'}">Records</a>
                 </li>
             </ul>
         </div>

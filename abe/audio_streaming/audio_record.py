@@ -8,7 +8,7 @@ from pytz import timezone
 import sqlite3
 import numpy as np
 import socket
-from time import sleep
+from time import sleep, time
 
 try:
     # TCP server
@@ -57,6 +57,12 @@ class databaseBusiness():
         data = crsr.fetchall()
         return data[0][0]
 
+    def end_recording(self):
+        conn = self.con
+        crsr = self.cursor
+        crsr.execute("UPDATE dinleme SET stat = 0 where var = 'record'")
+        conn.commit()
+
 
 def newest(path):
     files = os.listdir(path)
@@ -67,7 +73,6 @@ def oldest(path):
     files = os.listdir(path)
     paths = [os.path.join(path, basename) for basename in files if basename.endswith('.wav')]
     return min(paths, key=os.path.getctime)  
-
 
 class audioRecording():
 
@@ -137,7 +142,9 @@ class audioRecording():
         frames = []
         first_run = True
         # loop through stream and append audio chunks to frame array
-        while(dbProcess.recording_process()):
+        start = time()
+        stop_seconds = 900
+        while(dbProcess.recording_process() and (time() - start < stop_seconds)):
             try:
                 if first_run :
                     data =s.recv(4096)
@@ -152,8 +159,13 @@ class audioRecording():
                 first_run = True
                 print(e)   
             frames.append(data)
+
+        dbProcess.end_recording()
         print("finished recording")
+        
         return frames
+
+    
 
 #######################################################################################################################################################################
 

@@ -1,6 +1,7 @@
 from abe.support import *
 import logging
 from time import sleep
+from datetime import *
 
 
 logger = logging.getLogger(__name__)
@@ -61,19 +62,25 @@ class BaseFrequencyProccess(object):
                 #  06: message length   |   00: module_id
                 # kalan 5 byte bizim return değerlerimiz olacak, iki tanesi frekans için mesela)
                 debugPrint("HEX", answer, dir="RECV")
-                if(int(len(answer)) > 12):
-                    resp1 = answer[9]
-                    freq = answer[10] * 256 + answer[11]
-                    rssi = answer[12]
-                    snr = answer[13]
+                if(int(len(answer)) >= 12):
+                    try:
+                        resp1 = answer[9]
+                        freq = answer[10] * 256 + answer[11]
+                        rssi = answer[12]
+                        snr = answer[13]
+                    except Exception as e:
+                        print(e)
+                        return 1,1,1,1
                     
                     return resp1, freq, rssi, snr, 
                 else:
+                    now = datetime.now()
                     logger.warning(f"{now} - There is no answer from the modules!")
-                    return 0,0,0,0
+                    return 0,0,0,int(len(answer))
 
         else:
+            now = datetime.now()
             logger.warning(f"{now} - There is no ACK coming from the modules")           
-            return 0, 0, 0, 0
+            return 1, 1, 1, len(ack)
 
     

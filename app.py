@@ -76,6 +76,93 @@ def updateFrequencyList():
 
     except Exception as e:
         print(e)
+
+
+def CSVHandler(CSVfilePath,pathTarget, tunnelName):
+    try:
+        wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath,pathTarget, tunnelName)
+        CSVdata = data.query.all() 
+        manageCSV.addDataHeader(wb,ws, fileName, CSVdata) 
+        manageCSV.copyFile(CSVfilePath, pathTarget, fileName)
+    except Exception as e:
+        print(e)
+        print("CSV file cant be created")
+    return fileName
+
+def CSVFilterHandler(CSVfilePath, pathTarget, tunnelName, fromDate,toDate):
+    try:
+        wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, pathTarget, tunnelName)              
+        filteredCSVdata =[]
+        
+        CSVdatafilter = data.query.all() 
+
+        for info in CSVdatafilter:
+            date = datetime.strptime(info.date, '%Y-%m-%d %H:%M:%S.%f')
+            if date >= fromDate and date <= toDate:
+                filteredCSVdata.append(info)
+        manageCSV.addDataHeader(wb,ws, fileName, filteredCSVdata)
+        manageCSV.copyFile(CSVfilePath, pathTarget, fileName)
+    except Exception as e:
+        print(e)
+        print("CSV file cant be created")
+    return fileName
+
+def mainpageGetdata():
+    items = status.query.all()
+    mediums = medium.query.all()
+    hists = records.query.all()
+    ismodule0Working = db.session.query(dinleme).filter(dinleme.var == 'record').one()
+    return items, mediums, hists, ismodule0Working
+
+def showRecordsGetdata():
+    hists = records.query.all()
+    modul0Interval = db.session.query(dinleme).filter(dinleme.var == 'interval').one()
+    ismodule0Working = db.session.query(dinleme).filter(dinleme.var == 'record').one()
+    return hists, modul0Interval, ismodule0Working
+
+def getFilterDates():
+    fromDatestr = request.form.get("from_Date")
+    fromDate = datetime.strptime( fromDatestr , '%Y-%m-%d')
+    toDatestr = request.form.get("to_Date")
+    toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
+    return fromDate, toDate
+
+def filterHists(hists, fromDate, toDate):
+    newHists =[]
+    for hist in hists:
+        date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
+        if date >= fromDate and date <= toDate:
+            newHists.append(hist)
+    return newHists
+
+def changeModul0Interval(db):
+    interval = request.form.get("interval")
+    db.session.query(dinleme).filter(dinleme.var == 'interval').update({'stat': interval})
+    db.session.commit()
+    os.system("sudo systemctl restart fmStartRecording.service") # for recordings      
+
+def getPages(hists):
+    pagenumber= int(len(hists)/100) +1 
+    mod = int(len(hists)%100)
+    return pagenumber, mod
+
+def getPageEdges(pagenumber, mod):
+    try:
+        ClickedPage = int(request.form["recordpage"])
+    except Exception as e:
+        print(e)
+        ClickedPage = 0
+
+    if ClickedPage == (pagenumber-1) :
+        startrecord = ClickedPage *100
+        lastrecord = mod + startrecord
+    elif ClickedPage <= (pagenumber-1):
+        startrecord = ClickedPage *100
+        lastrecord = startrecord + 100
+    else:
+        startrecord = 0
+        lastrecord = startrecord + 100
+    return startrecord, lastrecord
         
 
 
@@ -125,12 +212,11 @@ def MainPage():
     #     return render_template("errorpage.html")
     global CurrentChannel
     Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
-    items = status.query.all()
-    mediums = medium.query.all()
-    hists = records.query.all()
+    items, mediums, hists, ismodule0Working = mainpageGetdata()
     text = [item.freq for item in items]
     if request.method == 'POST':
         for task in request.form:
+            print(task)
             if task == 'next':
                 if (CurrentChannel+1) < len(items):
                     CurrentChannel = CurrentChannel + 1                               
@@ -159,50 +245,46 @@ def MainPage():
                         pass
                 Frequency_Scan.Module_1_One_Frequency(CurrentChannel)
 
-    return render_template('mainpage.html', items = items, CurrentChannel = CurrentChannel, mediums = mediums, text = text, hists = hists) #socketflagi buraya ekle
+    return render_template('mainpage.html', items = items, CurrentChannel = CurrentChannel, mediums = mediums, text = text, hists = hists,
+     ismodule0Working = ismodule0Working.stat) #socketflagi buraya ekle
 
 @app.route('/records', methods=['GET', 'POST'])
 def showRecords():
-    wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath,pathTarget, tunnelName)
-    CSVdata = data.query.all() 
-    manageCSV.addDataHeader(wb,ws, fileName, CSVdata) 
-    manageCSV.copyFile(CSVfilePath, pathTarget, fileName)
-    hists = records.query.all()
+    fileName = CSVHandler(CSVfilePath,pathTarget, tunnelName)
+    hists, modul0Interval, ismodule0Working = showRecordsGetdata()
+    pagenumber, mod = getPages(hists)
+    startrecord =0 
+    lastrecord = startrecord + 100
     if request.method == 'POST':
+        hists, modul0Interval, ismodule0Working = showRecordsGetdata()
         for task in request.form:
-            if task == 'interval':  
-                interval = request.form.get("interval")
-                db.session.query(dinleme).filter(dinleme.var == 'interval').update({'stat': interval})
-                db.session.commit()
-                os.system("sudo systemctl restart fmStartRecording.service") # for recordings
-                return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx")
+            print(task)
+
+            if task == 'set':  
+                changeModul0Interval(db)
+                startrecord, lastrecord = getPageEdges(pagenumber, mod)
+                return render_template('recordings.html', hists = hists, CSVfileName =CSVfilePath + fileName + ".xlsx",
+                 modul0Interval = modul0Interval.stat, ismodule0Working = ismodule0Working.stat, pagenumber=pagenumber, startrecord= startrecord,lastrecord=lastrecord)
+
+            elif task == 'Apply':
+                fromDate, toDate = getFilterDates()
+                fileName = CSVFilterHandler(CSVfilePath, pathTarget, tunnelName, fromDate,toDate)
+                newHists =filterHists(hists, fromDate, toDate)
+                pagenumber, mod = getPages(newHists)
+                startrecord, lastrecord = getPageEdges(pagenumber, mod)
+                hists = newHists
+
+                return  render_template('recordings.html', hists = newHists, 
+                 CSVfileName ="/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx", modul0Interval = modul0Interval.stat,
+                  ismodule0Working = ismodule0Working.stat, pagenumber=pagenumber, startrecord= startrecord,lastrecord=lastrecord) 
+
             else:
-                wb, ws, fileName = manageCSV.createDeleteCSV(CSVfilePath, pathTarget, tunnelName)              
-                filteredCSVdata =[]
-                newHists =[]
-                fromDatestr = request.form.get("from_Date")
-                fromDate = datetime.strptime( fromDatestr , '%Y-%m-%d')
-                toDatestr = request.form.get("to_Date")
-                toDate = datetime.strptime( toDatestr + " " + "23:59:59", '%Y-%m-%d %H:%M:%S')
+                startrecord, lastrecord = getPageEdges(pagenumber, mod)
 
-                CSVdatafilter = data.query.all() 
-
-                for info in CSVdatafilter:
-                    date = datetime.strptime(info.date, '%Y-%m-%d %H:%M:%S.%f')
-                    if date >= fromDate and date <= toDate:
-                        filteredCSVdata.append(info)
-
-                manageCSV.addDataHeader(wb,ws, fileName, filteredCSVdata)
-                for hist in hists:
-                    date = datetime.strptime(hist.name, '%Y-%m-%d %H:%M:%S')
-                    if date >= fromDate and date <= toDate:
-                        newHists.append(hist)
-                
-                manageCSV.copyFile(CSVfilePath, pathTarget, fileName)
-
-                return  render_template('recordings.html', hists = newHists,  CSVfileName ="/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx") 
-
-    return render_template('recordings.html', hists = hists, CSVfileName = "/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx")
+                        
+    return render_template('recordings.html', hists = hists, 
+    CSVfileName = "/home/pi/fm-scanner/fm-scanner/static/" + fileName + ".xlsx" , modul0Interval = modul0Interval.stat,
+     ismodule0Working = ismodule0Working.stat, pagenumber=pagenumber,startrecord=startrecord,lastrecord=lastrecord)
 
 #############################################################API END POINTS##########################################################################################
 
