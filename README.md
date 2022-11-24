@@ -108,10 +108,13 @@ Inside the unit file
 Description=Example Service
 Wants=network-online.target     //PartOf can be used too
 After=network-online.target   //after device connected to a network start service
+StartLimitInterval=200
+StartLimitBurst=5
 
 [Service]
 Type=idle
 Restart=on-failure
+RestartSec=30
 User=pi
 ExecStart=/bin/bash -c 'cd /home/pi/examplePath && source env/bin/activate && python3 example.py'
 
@@ -135,5 +138,7 @@ sudo systemctl disable example.service
 systemctl status example.service
 ```
 
-
-
+#SYSTEMD JOURNALCTL
+```
+sudo journalctl --since "2022-11-24 05:40:00" - example.service
+```
