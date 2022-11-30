@@ -140,5 +140,5 @@ systemctl status example.service
 
 #SYSTEMD JOURNALCTL
 ```
-sudo journalctl --since "2022-11-24 05:40:00" - example.service
+sudo journalctl --since "2022-11-24 05:40:00" -u example.service
 ```
