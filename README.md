@@ -10,6 +10,7 @@
  ```
  ### create environment
  ```
+ sudo python3.7 -m pip install virtualenv
  sudo pip install virtualenv (if sudo do not used virtualenv command will not be recognized)
  virtualenv --version
  virtualenv env
